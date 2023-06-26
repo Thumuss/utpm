@@ -1,11 +1,10 @@
 use std::{
-    fs::{read_to_string, self}, process::{Command, Stdio}, collections::VecDeque,
+    fs::{read_to_string, self}, process::{Command, Stdio}
 };
 
 use serde::{Serialize, Deserialize};
 use serde_with::skip_serializing_none;
 
-use crate::parser::CLIOptions;
 
 use self::{state::{ErrorState, GoodState}, paths::{get_global_config, get_global_utpm}};
 
