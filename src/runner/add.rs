@@ -101,6 +101,7 @@ impl CommandUTPM for Install {
         println!("Description:");
         println!("  This command install a package from an URL or a NAME which refers to");
         println!("  the file at github.com/ThumusLive/unofficial-typst-package-manager/list_projects.json");
+        println!("  It add the dependency in the current and globaly utpm config file.");
         println!();
         println!("Options: ");
         println!("  --help, -h, h                           Print this message");

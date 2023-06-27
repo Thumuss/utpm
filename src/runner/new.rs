@@ -57,6 +57,18 @@ impl CommandUTPM for New {
     }
 
     fn help() {
-        println!("Help pour new");
+        println!("Unofficial Typst Package Manager (utpm).");
+        println!();
+        println!("Usage:");
+        println!("  utpm init");
+        println!();
+        println!("Description:");
+        println!("  This command creates multiple directories. First it creates a directory at ~/.config/utpm");
+        println!("  and then it creates a directory at $PWD/.utpm. It add a file called \".config\" in it and");
+        println!("  it create a file in the config dir named \".dps\" (for dependencies)");
+        println!("  All theses files are written in JSON. Please do not edit them.");
+        println!();
+        println!("Options: ");
+        println!("  --help, -h, h                           Print this message");
     }
 }

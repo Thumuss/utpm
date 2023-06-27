@@ -28,7 +28,7 @@ impl CommandUTPM for Run {
         let token = match self.options.pop_front() {
             Some(val) => match val {
                 CLIOptions::Token(string) => string,
-                _ => return Err(ErrorState::UnexpectedTokenError(String::from("found something uncommon"))),
+                _ => return Err(ErrorState::UnexpectedTokenError(String::from("Expected to find a file"))),
             },
             None => return Ok(GoodState::Help)
         };
@@ -53,7 +53,18 @@ impl CommandUTPM for Run {
     }
 
     fn help() {
-        println!("Help pour run");
+        println!("Unofficial Typst Package Manager (utpm).");
+        println!();
+        println!("Usage:");
+        println!("  utpm compile <FILE>");
+        println!();
+        println!("Description:");
+        println!("  This command is an extension of the command `typst compile`. It calls this command with an");
+        println!("  env variable. You can mimic this command by doing this :");
+        println!("  `TYPST_ROOT=\"$ABSOLUTE_PATH_TO_UTPM_FOLDER\" typst compile <FILE>`");
+        println!();
+        println!("Options: ");
+        println!("  --help, -h, h                           Print this message");
     }
 
    
