@@ -80,7 +80,7 @@ impl Parser {
                     self.tokens.push_back(CLIOptions::Uninstall);
                     next += 1;
                 }
-                "compile" | "c" => {
+                "compile" => {
                     self.tokens.push_back(CLIOptions::Run);
                     next += 1;
                 }
