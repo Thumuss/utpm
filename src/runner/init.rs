@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-
+use colored::Colorize;
 use crate::{
     parser::CLIOptions,
     utils::{Config, ListDependencies, VERSION, state::{GoodState, ErrorState}, paths::{get_global_utpm, check_path_dir, create_dir_config, check_path_file, get_global_config, get_current_utpm, get_current_config}}, runner::check_help,
@@ -25,35 +25,60 @@ impl CommandUTPM for New {
 
         let globpath = get_global_utpm();
 
-        println!("Check si ouais");
+        print!("◼ Checking if the global utpm folder exist...");
 
         if !check_path_dir(&globpath) {
-            println!("bah j'existe pas");
+            println!("{}", " ✖".red());
+            print!("  - Creating the config dir...");
             create_dir_config(&globpath)?;
+            println!("{}", " ✔".green());
+        } else {
+            println!("{}", " ✔".green());
+
         }
 
+        print!("◼ Checking if the global utpm config file exist...");
+
+
         if !check_path_file(&&get_global_config()) {
-            ListDependencies::new().write()
+            println!("{}", " ✖".red());
+            print!("  - Creating the config file...");
+            ListDependencies::new().write();
+            println!("{}", " ✔".green());
+        } else {
+            println!("{}", " ✔".green());
         }
+
+        print!("◼ Checking if there is a working directory...");
 
         let typst_config_dir = get_current_utpm()?;
 
+        println!("{}", " ✔".green());
+        print!("◼ Checking if the current .utpm dir exist...");
+
         if !check_path_dir(&typst_config_dir) {
-            create_dir_config(&typst_config_dir)?
+            println!("{}", " ✖".red());
+            print!("  - Creating the dir...");
+            create_dir_config(&typst_config_dir)?;
+            println!("{}", " ✔".green());
         } else {
-            println!("Le dossier existe déjà, skip...");
+            println!("{}", " ✔".green());
         }
 
         let config = get_current_config()?;
 
+        print!("◼ Checking if the current .utpm config file exist...");
+
         if !check_path_file(&config) {
-            println!("Création du fichier de dépendance...");
-            Config::new(String::from(VERSION), vec![]).write(&config)
+            println!("{}", " ✖".red());
+            print!("  - Creating the file...");
+            Config::new(String::from(VERSION), vec![]).write(&config);
+            println!("{}", " ✔".green());
         } else {
-            println!("Le dossier existe déjà, skip...");
+            println!("{}", " ✔".green());
         }
 
-        Ok(GoodState::Good(String::from("Tout s'est bien passé !")))
+        Ok(GoodState::Good(String::from("All good!")))
     }
 
     fn help() {

@@ -63,12 +63,9 @@ impl CommandUTPM for Install {
             };
         }
 
-        //TODO: Faire un fichier contenant tous les projets déjà existant sur "awesome-typst" + discord/#showcase
         //TODO: Faire un lecteur de config .utpm/.package → fallback sur la création provenant du github.com → Voir en dessous
         //TODO: Faire une recherche du "main" pour les projets n'ayant pas de .utpm
         //TODO: Commande create doit créer le dossier .utpm avec un fichier ".package" contenant toute la config de son projet → NON, utiliser config
-        //TODO: Ranger. Genre runner.rs trop de conneries
-        //TODO: Finir les ifs un peu partout + better text
 
         let globpath: String = get_global_utpm();
 
