@@ -61,7 +61,7 @@ impl Parser {
         let mut next: u32 = 0;
         while i < self.args.len() {
             match self.args[i].as_str() {
-                "n" | "new" | "init" => {
+                "init" => {
                     self.tokens.push_back(CLIOptions::New);
                 }
                 "c" | "create" => {
@@ -80,7 +80,7 @@ impl Parser {
                     self.tokens.push_back(CLIOptions::Uninstall);
                     next += 1;
                 }
-                "r" | "run" | "compile" => {
+                "compile" | "c" => {
                     self.tokens.push_back(CLIOptions::Run);
                     next += 1;
                 }

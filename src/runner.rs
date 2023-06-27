@@ -1,12 +1,12 @@
 use std::collections::VecDeque;
 
 use crate::parser::CLIOptions;
-use crate::runner::add::Install;
-use crate::runner::new::New;
+use crate::runner::install::Install;
+use crate::runner::init::New;
 use crate::utils::state::{GoodState, ErrorState};
 
-pub mod add;
-pub mod new;
+pub mod install;
+pub mod init;
 pub mod run;
 
 use self::run::Run;
