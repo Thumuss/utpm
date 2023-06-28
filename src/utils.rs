@@ -50,6 +50,7 @@ impl Dependency {
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
+    pub package: Option<Dependency>,
     pub version: String,
     pub dependencies: Vec<Dependency>,
 }
@@ -128,8 +129,9 @@ impl Config {
         fs::write(path, form).expect("aaa");
     }
 
-    pub fn new(version: String, dependencies: Vec<Dependency>) -> Self {
+    pub fn new(version: String, dependencies: Vec<Dependency>, package: Option<Dependency>) -> Self {
         Self {
+            package,
             version,
             dependencies,
         }

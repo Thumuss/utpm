@@ -1,12 +1,19 @@
-use std::collections::VecDeque;
-use colored::Colorize;
 use crate::{
     parser::CLIOptions,
-    utils::{Config, ListDependencies, VERSION, state::{GoodState, ErrorState}, paths::{get_global_utpm, check_path_dir, create_dir_config, check_path_file, get_global_config, get_current_utpm, get_current_config}}, runner::check_help,
+    runner::check_help,
+    utils::{
+        paths::{
+            check_path_dir, check_path_file, create_dir_config, get_current_config,
+            get_current_utpm, get_global_config, get_global_utpm,
+        },
+        state::{ErrorState, GoodState},
+        Config, ListDependencies, VERSION,
+    },
 };
+use colored::Colorize;
+use std::collections::VecDeque;
 
 use super::CommandUTPM;
-
 
 pub struct New {
     options: VecDeque<CLIOptions>,
@@ -34,11 +41,9 @@ impl CommandUTPM for New {
             println!("{}", " ✔".green());
         } else {
             println!("{}", " ✔".green());
-
         }
 
         print!("◼ Checking if the global utpm config file exist...");
-
 
         if !check_path_file(&&get_global_config()) {
             println!("{}", " ✖".red());
@@ -72,7 +77,7 @@ impl CommandUTPM for New {
         if !check_path_file(&config) {
             println!("{}", " ✖".red());
             print!("  - Creating the file...");
-            Config::new(String::from(VERSION), vec![]).write(&config);
+            Config::new(String::from(VERSION), vec![], None).write(&config);
             println!("{}", " ✔".green());
         } else {
             println!("{}", " ✔".green());
