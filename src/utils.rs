@@ -26,11 +26,11 @@ pub struct Author {
 pub struct Dependency {
     pub name: String,
     pub version: String,
-    pub link: String,
-    pub authors: Option<Vec<Author>>,
-    pub author: Option<Author>,
-    pub main: String,
-    pub auto: bool, //* ça permet juste de savoir si ça provient d'un lien github ou pas
+    pub authors: Vec<String>,
+    pub entrypoint: String,
+    pub license: String, 
+    pub description: String,
+    pub repository: Option<String>
 }
 
 impl Dependency {
@@ -39,11 +39,11 @@ impl Dependency {
         Self {
             name: String::from(col[4]),
             version: String::from("latest"), //TODO: Pas besoin de dire plus
-            link: link.clone(),
-            author: Some( Author { name: String::from(col[3]), email: None, website: None }),
-            authors: Some (vec![]),
-            main: String::from("./main.typ"),
-            auto: true,
+            repository: Some(link.clone()),
+            authors: vec![],
+            entrypoint: String::from("./main.typ"),
+            description: String::from("Generated from ") + link.as_str(),
+            license: String::from("Unknown")
         }
     }
 }
@@ -71,7 +71,7 @@ impl ListDependencies {
 
     pub fn load() -> Self {
         let globpath: String = get_global_config();
-        serde_json::from_str(
+        toml::from_str(
             read_to_string(globpath)
                 .expect("Should have read the file")
                 .as_str(),
@@ -81,7 +81,7 @@ impl ListDependencies {
 
     pub fn write(&mut self) {
         let globpath: String = get_global_config();
-        let form = serde_json::to_string(&self).unwrap();
+        let form = toml::to_string_pretty(&self).unwrap();
         fs::write(globpath, form).expect("Should have write the file");
     }
 
@@ -116,7 +116,7 @@ impl ListDependencies {
 
 impl Config {
     pub fn load(path: &String) -> Self {
-        serde_json::from_str(
+        toml::from_str(
             read_to_string(path)
                 .expect("Should have read the file")
                 .as_str(),
@@ -125,7 +125,7 @@ impl Config {
     }
 
     pub fn write(&mut self, path: &String) {
-        let form = serde_json::to_string(&self).unwrap();
+        let form = toml::to_string_pretty(&self).unwrap();
         fs::write(path, form).expect("aaa");
     }
 
