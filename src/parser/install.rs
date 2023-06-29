@@ -1,6 +1,6 @@
 use std::{collections::VecDeque, os::unix::fs::symlink};
 
-use crate::parser::CLIOptions;
+use crate::lexer::CLIOptions;
 use crate::utils::{Config, ListDependencies, Dependency};
 use crate::utils::paths::{get_current_utpm, get_current_config, get_global_utpm, check_existing_symlink};
 use crate::utils::state::{GoodState, ErrorState};

@@ -1,6 +1,6 @@
 use crate::{
-    parser::CLIOptions,
-    runner::check_help,
+    lexer::CLIOptions,
+    parser::check_help,
     utils::{
         paths::{
             check_path_dir, check_path_file, create_dir_config, get_current_config,

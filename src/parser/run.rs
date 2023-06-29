@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    parser::CLIOptions,
+    lexer::CLIOptions,
     utils::{state::{GoodState, ErrorState}, paths::{get_current_utpm, get_current_dir}},
 };
 
