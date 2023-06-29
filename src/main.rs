@@ -9,8 +9,7 @@ pub mod runner;
 pub mod utils;
 
 fn main() {
-    let mut args: VecDeque<String> = env::args().collect();
-    args.pop_front();
+    let args: VecDeque<String> = env::args().skip(1).collect();
     let mut parser = Parser::new(args);
     parser.parse();
     parser.display_command();
