@@ -12,8 +12,7 @@ fn main() {
     let args: VecDeque<String> = env::args().skip(1).collect();
     let mut lexer = Lexer::new(args);
     lexer.read();
-    //parser.display_command();
-
+    
     let mut parser = Parser::new(lexer.tokens.clone());
     parser.parse();
 }

@@ -1,22 +1,13 @@
-use std::{
-    collections::VecDeque,
-    fs,
-    os::unix::fs::symlink,
-    process::{Command, Stdio},
-};
-
-use cmd_lib::run_cmd;
+use std::{collections::VecDeque, fs};
+use colored::Colorize;
 
 use crate::{
     lexer::CLIOptions,
     utils::{
-        check_help,
-        paths::{
-            check_existing_symlink, check_path_dir, current_package, current_utpm, d_local,
-            d_packages, get_current_dir, global_local_packages, global_utpm,
-        },
+        check_help, copy_dir_all,
+        paths::{current_package, d_local, get_current_dir, check_path_dir},
         state::{ErrorState, GoodState},
-        Config,
+        TypstConfig, check_smt,
     },
 };
 
@@ -36,63 +27,51 @@ impl CommandUTPM for Link {
             Self::help();
             return Ok(GoodState::Help);
         }
-        let packages = &global_local_packages();
-        if !check_path_dir(packages) {
-            fs::create_dir_all(packages);
-        }
 
-        if !check_path_dir(&d_packages().to_string()) {
-            fs::create_dir_all(packages);
-        }
-
-        let config = Config::load(
+        let config = TypstConfig::load(
             &(match current_package() {
                 Ok(val) => val,
                 Err(val) => return Err(val),
             }),
         );
 
-        if let Some(package) = config.package {
-            let x = package.name;
-            let y = package.version;
-            let name = format!("{}/{}-{}", packages, x, y);
-            fs::create_dir_all(&name);
-            match run_cmd!(
-                cp -r ./ $name/;
-            ) {
-                Err(val) => println!("{}", val.to_string()),
-                _ => (),
-            };
-            if !check_path_dir(&d_packages()) {
-                fs::create_dir_all(&d_packages());
-            }
-            if !check_existing_symlink(&d_local()) {
-                match symlink(global_local_packages(), d_local()) {
-                    Ok(_) => (),
-                    Err(val) => {
-                        println!("{}", global_local_packages());
-                        return Err(ErrorState::SymlinkUnixError(val.to_string()));
-                    }
-                };
-            }
-        } else {
-            return Err(ErrorState::UnknowError("aaa".to_string()));
+        let name = config.package.name;
+        let version = config.package.version;
+        let path = format!("{}/{}-{}", &d_local(), name, version);
+        let info = "Info:".yellow().bold();
+        if check_path_dir(&path) && !check_smt(&self.options, CLIOptions::Force) {
+            return Err(ErrorState::UnknowError(format!("This package ({}:{}) already exist!\n{info} Put --force to force the copy or change the version in 'typst.toml'", name, version)));
         }
-        Ok(GoodState::Good("good".to_string()))
+        match fs::create_dir_all(&path) {
+            Ok(_) => (),
+            Err(val) => return Err(ErrorState::UnknowError(val.to_string())),
+        }
+
+        if check_smt(&self.options, CLIOptions::Force) {
+            match fs::remove_dir_all(&path) {
+                Ok(_) => (),
+                Err(val) => return Err(ErrorState::UnknowError(val.to_string())),
+            };
+        }
+
+        match copy_dir_all(get_current_dir()?, &path) {
+            Ok(_) => Ok(GoodState::Good(format!("Project link to: {}\nTry importing with:\n #import \"@local/{}:{}\": *", path, name, version))),
+            Err(val) => Err(ErrorState::UnknowError(val.to_string())),
+        }
     }
 
     fn help() {
         println!("Unofficial Typst Package Manager (utpm).");
         println!();
         println!("Usage:");
-        println!("  utpm compile <FILE>");
+        println!("  utpm link");
         println!();
         println!("Description:");
-        println!("  This command is an extension of the command `typst compile`. It calls this command with an");
-        println!("  env variable. You can mimic this command by doing this :");
-        println!("  `TYPST_ROOT=\"$ABSOLUTE_PATH_TO_UTPM_FOLDER\" typst compile <FILE>`");
+        println!("  This command copy the content of the pwd and copy it in");
+        println!("  the packages directory of typst");
         println!();
         println!("Options: ");
-        println!("  --help, -h, h                           Print this message");
+        println!("  --help,  -h                       Print this message");
+        println!("  --force, -f                       Force the copy");
     }
 }

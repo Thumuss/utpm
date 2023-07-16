@@ -1,20 +1,15 @@
 use std::collections::VecDeque;
 
 use crate::lexer::CLIOptions;
-use crate::parser::install::Install;
-use crate::parser::init::New;
 use crate::utils::state::{GoodState, ErrorState};
 
-pub mod install;
-pub mod init;
-pub mod compile;
-pub mod refresh;
+
 pub mod link;
 pub mod unlink;
+pub mod create;
 
-use self::compile::Compile;
+use self::create::Create;
 use self::link::Link;
-use self::refresh::Refresh;
 
 pub struct Parser {
     tokens: VecDeque<CLIOptions>,
@@ -34,11 +29,8 @@ impl Parser {
     pub fn parse(&mut self) {
         let result = match self.tokens.pop_front() {
             Some(val) => match val {
-                CLIOptions::Init => New::new(self.tokens.clone()).run(),
-                CLIOptions::Install => Install::new(self.tokens.clone()).run(),
-                CLIOptions::Refresh => Refresh::new(self.tokens.clone()).run(),
-                CLIOptions::Compile => Compile::new(self.tokens.clone()).run(),
                 CLIOptions::Link => Link::new(self.tokens.clone()).run(),
+                CLIOptions::Create => Create::new(self.tokens.clone()).run(),
                 CLIOptions::Help => {
                     Self::help();
                     Ok(GoodState::Help)
@@ -55,7 +47,7 @@ impl Parser {
             Ok(state) => match state {
                 GoodState::Help => (),
                 GoodState::Good(string) => println!("{}", string),
-                GoodState::NothingToDo(string) => println!("Nothing to do! {}", string),
+                GoodState::NothingToDo => println!("Nothing to do!"),
             },
             Err(string) => string.display(),
         }
@@ -68,21 +60,19 @@ impl Parser {
         println!("  utpm <commands> [options]");
         println!();
         println!("Commands: ");
-        println!("  install <url|name>          Install a new package from a URL or from a NAME");
-        println!("  create <name>               Create a new package to publish the project");
-        println!("  delete                      Delete the actual package you are currently creating :(");
-        println!("  init                        Create a new folder named \".utpm\" and create everything needed to add packages");
-        println!("  compile <path>              Extension from the typst command, compile with typst a document to a pdf");
-        println!("  uninstall <url|name>        Uninstall a package");
+        println!("  create                      Create a new package to link the project");
+        println!("  link                        Copy the folder into your share folder to make a new package (need a typst.toml file)");
+        //println!("  unlink                      Remove the package of typst");
         println!();
         println!("Options: ");
         println!("  --help, -h, h               Print this message or the message assosiate to the command");
         println!();
         println!("Example:");
-        println!("  utpm init");
-        println!("  utpm add typst-tablex");
-        println!("  echo \'#import \"/typst-tablex/tablex.typ\": tablex\' > main.typ");
-        println!("  utpm run main.typ");
+        println!("  utpm create");
+        println!("  echo \"#let x = 12\" > main.typ");
+        println!("  utpm link");
+        println!("  echo \'#import \"@local/example:1.0.0\": x; #x\' > main.typ");
+        println!("  typst c main.typ");
         println!();
         println!("Tips:");
         println!("  You can use help in front of any commands:  utpm run --help");

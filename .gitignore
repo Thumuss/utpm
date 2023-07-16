@@ -4,3 +4,6 @@
 utpm
 backup
 typst.toml
+*.typ
+*.typst
+*.pdf
