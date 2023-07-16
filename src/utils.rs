@@ -1,24 +1,32 @@
 use std::{
-    fs::{read_to_string, self}, process::{Command, Stdio}
+    collections::VecDeque,
+    fs::{self, read_to_string},
+    process::{Command, Stdio}, path::Path,
 };
 
-use serde::{Serialize, Deserialize};
+use std::io;
+
+use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
+use crate::lexer::CLIOptions;
 
-use self::{state::{ErrorState, GoodState}, paths::{get_global_config, get_global_utpm}};
+use self::{
+    paths::{global_config, global_utpm},
+    state::{ErrorState, GoodState},
+};
 
-pub const VERSION: &'static str = "1.0";
+pub const VERSION: &str = "1.0";
 
-pub mod state;
 pub mod paths;
+pub mod state;
 
 #[skip_serializing_none]
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
 pub struct Author {
     email: Option<String>,
     name: String,
-    website: Option<String>
+    website: Option<String>,
 }
 
 #[skip_serializing_none]
@@ -28,22 +36,22 @@ pub struct Dependency {
     pub version: String,
     pub authors: Vec<String>,
     pub entrypoint: String,
-    pub license: String, 
+    pub license: String,
     pub description: String,
-    pub repository: Option<String>
+    pub repository: Option<String>,
 }
 
 impl Dependency {
-    pub fn from_link(link: &String) -> Self {
-        let col: Vec<&str> = link.split("/").collect();
+    pub fn from_link(link: &str) -> Self {
+        let col: Vec<&str> = link.split('/').collect();
         Self {
             name: String::from(col[4]),
             version: String::from("latest"), //TODO: Pas besoin de dire plus
-            repository: Some(link.clone()),
+            repository: Some(link.to_owned()),
             authors: vec![],
             entrypoint: String::from("./main.typ"),
-            description: String::from("Generated from ") + link.as_str(),
-            license: String::from("Unknown")
+            description: String::from("Generated from ") + link,
+            license: String::from("Unknown"),
         }
     }
 }
@@ -61,16 +69,18 @@ pub struct ListDependencies {
     pub dependencies: Vec<Dependency>,
 }
 
-impl ListDependencies {
-    pub fn new() -> Self {
+impl Default for ListDependencies {
+    fn default() -> Self {
         Self {
             version: VERSION.to_string(),
             dependencies: vec![],
         }
     }
+}
 
+impl ListDependencies {
     pub fn load() -> Self {
-        let globpath: String = get_global_config();
+        let globpath: String = global_config();
         toml::from_str(
             read_to_string(globpath)
                 .expect("Should have read the file")
@@ -80,13 +90,13 @@ impl ListDependencies {
     }
 
     pub fn write(&mut self) {
-        let globpath: String = get_global_config();
+        let globpath: String = global_config();
         let form = toml::to_string_pretty(&self).unwrap();
         fs::write(globpath, form).expect("Should have write the file");
     }
 
     pub fn add(&mut self, link: &String) -> Result<GoodState, ErrorState> {
-        let globpath: String = get_global_utpm();
+        let globpath: String = global_utpm();
         let depend = Dependency::from_link(link);
 
         let mut res = Command::new("git")
@@ -102,11 +112,12 @@ impl ListDependencies {
         if status.success() {
             self.dependencies.push(depend);
             self.write();
-            return Ok(GoodState::Good("Downloaded".to_string()));
+            Ok(GoodState::Good("Downloaded".to_string()))
         } else {
-            Err(ErrorState::GitCloneError(String::from("error above ^^^^^^^^^")))
+            Err(ErrorState::GitCloneError(String::from(
+                "error above ^^^^^^^^^",
+            )))
         }
-        
     }
 
     pub fn remove(&mut self) {
@@ -116,6 +127,7 @@ impl ListDependencies {
 
 impl Config {
     pub fn load(path: &String) -> Self {
+        println!("{}", path);
         toml::from_str(
             read_to_string(path)
                 .expect("Should have read the file")
@@ -129,7 +141,11 @@ impl Config {
         fs::write(path, form).expect("aaa");
     }
 
-    pub fn new(version: String, dependencies: Vec<Dependency>, package: Option<Dependency>) -> Self {
+    pub fn new(
+        version: String,
+        dependencies: Vec<Dependency>,
+        package: Option<Dependency>,
+    ) -> Self {
         Self {
             package,
             version,
@@ -138,3 +154,24 @@ impl Config {
     }
 }
 
+pub fn check_help(options: &VecDeque<CLIOptions>) -> bool {
+    check_smt(options, CLIOptions::Help)
+}
+
+pub fn check_smt(options: &VecDeque<CLIOptions>, obj: CLIOptions) -> bool {
+    options.iter().any(|val| matches!(val, a if a == &obj))
+}
+
+pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
+    fs::create_dir_all(&dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        } else {
+            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
+    Ok(())
+}

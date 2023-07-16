@@ -2,15 +2,20 @@ use std::collections::VecDeque;
 
 #[derive(Clone, PartialEq, Eq)]
 pub enum CLIOptions {
-    New, // Fait
+    Init,
     Create,
     Delete,
-    Install, // Fait
+    Install,
     Uninstall,
-    Run, // Fait
+    Compile,
+    Config,
+    Link,
+    Unlink,
+    Refresh,
 
     // Flags
     Help,
+    Global,
 
     // Rest
     Unknown,
@@ -22,14 +27,19 @@ pub enum CLIOptions {
 impl CLIOptions {
     fn display(&self) -> String {
         match self {
-            CLIOptions::New => String::from("new"),
+            CLIOptions::Init => String::from("init"),
+            CLIOptions::Refresh => String::from("refresh"),
             CLIOptions::Create => String::from("create"),
             CLIOptions::Delete => String::from("delete"),
             CLIOptions::Install => String::from("install"),
             CLIOptions::Uninstall => String::from("uninstall"),
-            CLIOptions::Run => String::from("run"),
+            CLIOptions::Compile => String::from("run"),
+            CLIOptions::Link => String::from("link"),
+            CLIOptions::Unlink => String::from("unlink"),
+            CLIOptions::Config => String::from("config"),
 
-            CLIOptions::Help => String::from("help"),
+            CLIOptions::Help => String::from("--help"),
+            CLIOptions::Global => String::from("--global"),
             CLIOptions::Unknown => String::from("unknown"),
             CLIOptions::Token(aaa) => aaa.to_string(),
         }
@@ -62,7 +72,7 @@ impl Lexer {
         while i < self.args.len() {
             match self.args[i].as_str() {
                 "init" => {
-                    self.tokens.push_back(CLIOptions::New);
+                    self.tokens.push_back(CLIOptions::Init);
                 }
                 "c" | "create" => {
                     self.tokens.push_back(CLIOptions::Create);
@@ -81,11 +91,21 @@ impl Lexer {
                     next += 1;
                 }
                 "compile" => {
-                    self.tokens.push_back(CLIOptions::Run);
+                    self.tokens.push_back(CLIOptions::Compile);
+                }
+                "refresh" => {
+                    self.tokens.push_back(CLIOptions::Refresh);
                     next += 1;
+                }
+                "link" => {
+                    self.tokens.push_back(CLIOptions::Link);
                 }
                 "--help" | "help" | "-h" => {
                     self.tokens.push_back(CLIOptions::Help);
+                    return;
+                },
+                "--global" | "-g" => {
+                    self.tokens.push_back(CLIOptions::Global);
                     return;
                 },
 

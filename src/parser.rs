@@ -7,16 +7,21 @@ use crate::utils::state::{GoodState, ErrorState};
 
 pub mod install;
 pub mod init;
-pub mod run;
+pub mod compile;
+pub mod refresh;
+pub mod link;
+pub mod unlink;
 
-use self::run::Run;
+use self::compile::Compile;
+use self::link::Link;
+use self::refresh::Refresh;
 
 pub struct Parser {
     tokens: VecDeque<CLIOptions>,
 }
 
 pub trait CommandUTPM {
-    fn new(tokens: VecDeque<CLIOptions>) -> Self;
+    fn new(tokens: VecDeque<CLIOptions>) -> Self ;
     fn run (&mut self) -> Result<GoodState, ErrorState>;
     fn help();
 }
@@ -29,9 +34,11 @@ impl Parser {
     pub fn parse(&mut self) {
         let result = match self.tokens.pop_front() {
             Some(val) => match val {
-                CLIOptions::New => New::new(self.tokens.clone()).run(),
+                CLIOptions::Init => New::new(self.tokens.clone()).run(),
                 CLIOptions::Install => Install::new(self.tokens.clone()).run(),
-                CLIOptions::Run => Run::new(self.tokens.clone()).run(),
+                CLIOptions::Refresh => Refresh::new(self.tokens.clone()).run(),
+                CLIOptions::Compile => Compile::new(self.tokens.clone()).run(),
+                CLIOptions::Link => Link::new(self.tokens.clone()).run(),
                 CLIOptions::Help => {
                     Self::help();
                     Ok(GoodState::Help)
@@ -83,25 +90,3 @@ impl Parser {
     }
 }
 
-fn check_help(options: &VecDeque<CLIOptions>) -> bool {
-    check_smt(options, CLIOptions::Help)
-}
-
-fn check_smt(options: &VecDeque<CLIOptions>, obj: CLIOptions) -> bool {
-    options.iter().any(|val| match val {
-        a if a == &obj  => true,
-        _ => false
-    })
-}
-
-#[cfg(test)]
-mod test{
-    use std::collections::VecDeque;
-    use super::*;
-    #[test]
-    fn testy(){
-        let mut jpp: VecDeque<CLIOptions> = VecDeque::new();
-        jpp.push_back(CLIOptions::Help);
-        println!("{}", check_smt(&jpp, CLIOptions::Delete));
-    }
-}

@@ -2,3 +2,5 @@
 .utpm
 .vscode
 utpm
+backup
+typst.toml

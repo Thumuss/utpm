@@ -3,18 +3,20 @@ use std::{
     process::{Command, Stdio},
 };
 
+use cmd_lib::run_cmd;
+
 use crate::{
     lexer::CLIOptions,
-    utils::{state::{GoodState, ErrorState}, paths::{get_current_utpm, get_current_dir}},
+    utils::{state::{GoodState, ErrorState}, paths::{current_utpm, get_current_dir}, check_help},
 };
 
-use super::{CommandUTPM, check_help};
+use super::CommandUTPM;
 
-pub struct Run {
+pub struct Compile {
     options: VecDeque<CLIOptions>,
 }
 
-impl CommandUTPM for Run {
+impl CommandUTPM for Compile {
     fn new(options: VecDeque<CLIOptions>) -> Self {
         Self { options }
     }
@@ -33,22 +35,12 @@ impl CommandUTPM for Run {
             None => return Ok(GoodState::Help)
         };
 
-        let mut res = Command::new("typst")
-            .env("TYPST_ROOT", get_current_utpm()?.as_str())
-            .arg("c")
-            .arg(token)
-            .current_dir(get_current_dir()?)
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("Should spawn the thread");
+        let cdir = get_current_dir()?;
+        let cutpm = current_utpm()?;
 
-
-        let status = res.wait().expect("Should run the command");
-
-        if status.success() {
-            Ok(GoodState::Good("Success".to_string()))
-        } else {
-            Err(ErrorState::TypstCompileError(String::from("error above ^^^^^^^^^^^^")))
+        match run_cmd!(TYPST_ROOT=$cutpm typst -c $cdir/$token) {
+            Ok(_) => Ok(GoodState::Good("Success".to_string())),
+            Err(val) =>  Err(ErrorState::UnknowError(val.to_string()))
         }
     }
 

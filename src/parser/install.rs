@@ -1,12 +1,13 @@
 use std::{collections::VecDeque, os::unix::fs::symlink};
 
 use crate::lexer::CLIOptions;
-use crate::utils::{Config, ListDependencies, Dependency};
-use crate::utils::paths::{get_current_utpm, get_current_config, get_global_utpm, check_existing_symlink};
-use crate::utils::state::{GoodState, ErrorState};
+use crate::utils::paths::{
+    check_existing_symlink, current_config, current_utpm, global_utpm,
+};
+use crate::utils::state::{ErrorState, GoodState};
+use crate::utils::{Config, Dependency, ListDependencies, check_help};
 
-use super::{check_help, CommandUTPM};
-
+use super::CommandUTPM;
 
 pub struct Install {
     options: VecDeque<CLIOptions>,
@@ -23,7 +24,7 @@ impl CommandUTPM for Install {
             return Ok(GoodState::Help);
         }
 
-        let current_directory = match get_current_utpm() {
+        let current_directory = match current_utpm() {
             Ok(val) => val,
             Err(_) => {
                 return Err(ErrorState::CurrentDirectoryError(String::from(
@@ -44,7 +45,7 @@ impl CommandUTPM for Install {
             None => return Ok(GoodState::Help),
         };
 
-        let current_config = get_current_config()?;
+        let current_config = current_config()?;
 
         let mut conf = Config::load(&current_config);
         let mut global_conf = ListDependencies::load();
@@ -67,7 +68,7 @@ impl CommandUTPM for Install {
         //TODO: Faire une recherche du "main" pour les projets n'ayant pas de .utpm
         //TODO: Commande create doit créer le dossier .utpm avec un fichier ".package" contenant toute la config de son projet → NON, utiliser config
 
-        let globpath: String = get_global_utpm();
+        let globpath: String = global_utpm();
 
         if !conf.dependencies.contains(&dependency) {
             conf.dependencies.push(dependency);
@@ -82,7 +83,7 @@ impl CommandUTPM for Install {
 
         match symlink(
             globpath + "/" + name.as_str(),
-            current_directory.clone() + "/" + name.as_str(),
+            current_directory + "/" + name.as_str(),
         ) {
             Ok(_) => Ok(GoodState::Good("good".to_string())),
             Err(val) => Err(ErrorState::SymlinkUnixError(val.to_string())),
@@ -103,5 +104,4 @@ impl CommandUTPM for Install {
         println!("Options: ");
         println!("  --help, -h, h                           Print this message");
     }
-
 }

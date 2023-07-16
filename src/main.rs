@@ -10,11 +10,11 @@ pub mod utils;
 
 fn main() {
     let args: VecDeque<String> = env::args().skip(1).collect();
-    let mut parser = Lexer::new(args);
-    parser.read();
-    parser.display_command();
+    let mut lexer = Lexer::new(args);
+    lexer.read();
+    //parser.display_command();
 
-    let mut runner = Parser::new(parser.tokens.clone());
-    runner.parse();
+    let mut parser = Parser::new(lexer.tokens.clone());
+    parser.parse();
 }
 

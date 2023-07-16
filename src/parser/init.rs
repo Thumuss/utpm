@@ -1,10 +1,10 @@
 use crate::{
     lexer::CLIOptions,
-    parser::check_help,
     utils::{
+        check_help, check_smt,
         paths::{
-            check_path_dir, check_path_file, create_dir_config, get_current_config,
-            get_current_utpm, get_global_config, get_global_utpm,
+            check_path_dir, check_path_file, create_dir_config, current_config,
+            get_current_dir, current_utpm, global_config, global_utpm,
         },
         state::{ErrorState, GoodState},
         Config, ListDependencies, VERSION,
@@ -30,7 +30,7 @@ impl CommandUTPM for New {
             return Ok(GoodState::Help);
         }
 
-        let globpath = get_global_utpm();
+        let globpath = global_utpm();
 
         print!("◼ Checking if the global utpm folder exist...");
 
@@ -38,48 +38,44 @@ impl CommandUTPM for New {
             println!("{}", " ✖".red());
             print!("  - Creating the config dir...");
             create_dir_config(&globpath)?;
-            println!("{}", " ✔".green());
-        } else {
-            println!("{}", " ✔".green());
         }
+        println!("{}", " ✔".green());
 
         print!("◼ Checking if the global utpm config file exist...");
 
-        if !check_path_file(&&get_global_config()) {
+        if !check_path_file(&global_config()) {
             println!("{}", " ✖".red());
             print!("  - Creating the config file...");
-            ListDependencies::new().write();
-            println!("{}", " ✔".green());
-        } else {
-            println!("{}", " ✔".green());
+            ListDependencies::default().write();
         }
-
-        print!("◼ Checking if there is a working directory...");
-
-        let typst_config_dir = get_current_utpm()?;
-
         println!("{}", " ✔".green());
-        print!("◼ Checking if the current .utpm dir exist...");
 
-        if !check_path_dir(&typst_config_dir) {
-            println!("{}", " ✖".red());
-            print!("  - Creating the dir...");
-            create_dir_config(&typst_config_dir)?;
-            println!("{}", " ✔".green());
+        if check_smt(&self.options, CLIOptions::Global) {
+            println!("◼ Skipping local...")
         } else {
+            print!("◼ Checking if there is a working directory...");
+
+            let typst_config_dir = current_utpm()?;
+
             println!("{}", " ✔".green());
-        }
+            print!("◼ Checking if the current .utpm dir exist...");
 
-        let config = get_current_config()?;
-
-        print!("◼ Checking if the current .utpm config file exist...");
-
-        if !check_path_file(&config) {
-            println!("{}", " ✖".red());
-            print!("  - Creating the file...");
-            Config::new(String::from(VERSION), vec![], None).write(&config);
+            if !check_path_dir(&typst_config_dir) {
+                println!("{}", " ✖".red());
+                print!("  - Creating the dir...");
+                create_dir_config(&typst_config_dir)?;
+            }
             println!("{}", " ✔".green());
-        } else {
+
+            let config = get_current_dir()? + "/typst.toml";
+
+            print!("◼ Checking if the current typst.toml file exist...");
+
+            if !check_path_file(&config) {
+                println!("{}", " ✖".red());
+                print!("  - Creating the file...");
+                Config::new(String::from(VERSION), vec![], None).write(&config);
+            }
             println!("{}", " ✔".green());
         }
 
