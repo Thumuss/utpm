@@ -1,13 +1,13 @@
-use std::{collections::VecDeque, fs};
 use colored::Colorize;
+use std::{collections::VecDeque, fs};
 
 use crate::{
     lexer::CLIOptions,
     utils::{
-        check_help, copy_dir_all,
-        paths::{current_package, d_local, get_current_dir, check_path_dir},
+        check_help, check_smt, copy_dir_all,
+        paths::{check_path_dir, current_package, d_local, get_current_dir},
         state::{ErrorState, GoodState},
-        TypstConfig, check_smt,
+        TypstConfig, symlink_all,
     },
 };
 
@@ -23,6 +23,7 @@ impl CommandUTPM for Link {
     }
 
     fn run(&mut self) -> Result<GoodState, ErrorState> {
+        let curr = get_current_dir()?;
         if check_help(&self.options) {
             Self::help();
             return Ok(GoodState::Help);
@@ -37,7 +38,7 @@ impl CommandUTPM for Link {
 
         let name = config.package.name;
         let version = config.package.version;
-        let path = format!("{}/{}-{}", &d_local(), name, version);
+        let path = format!("{}/{}/{}", &d_local(), name, version);
         let info = "Info:".yellow().bold();
         if check_path_dir(&path) && !check_smt(&self.options, CLIOptions::Force) {
             return Err(ErrorState::UnknowError(format!("This package ({}:{}) already exist!\n{info} Put --force to force the copy or change the version in 'typst.toml'", name, version)));
@@ -54,9 +55,22 @@ impl CommandUTPM for Link {
             };
         }
 
-        match copy_dir_all(get_current_dir()?, &path) {
-            Ok(_) => Ok(GoodState::Good(format!("Project link to: {}\nTry importing with:\n #import \"@local/{}:{}\": *", path, name, version))),
-            Err(val) => Err(ErrorState::UnknowError(val.to_string())),
+        if check_smt(&self.options, CLIOptions::NoCopy) {
+            match symlink_all(&curr, &path) {
+                Ok(_) => Ok(GoodState::Good(format!(
+                    "Project link to: {} \nTry importing with:\n #import \"@local/{}:{}\": *",
+                    path, name, version
+                ))),
+                Err(val) => Err(ErrorState::UnknowError(val.to_string())),
+            }
+        } else {
+            match copy_dir_all(get_current_dir()?, &path) {
+                Ok(_) => Ok(GoodState::Good(format!(
+                    "Project copied to: {}\nTry importing with:\n #import \"@local/{}:{}\": *",
+                    path, name, version
+                ))),
+                Err(val) => Err(ErrorState::UnknowError(val.to_string())),
+            }
         }
     }
 
@@ -73,5 +87,6 @@ impl CommandUTPM for Link {
         println!("Options: ");
         println!("  --help,  -h                       Print this message");
         println!("  --force, -f                       Force the copy");
+        println!("  --no-copy, -nc                    Use symlinks instead.");
     }
 }

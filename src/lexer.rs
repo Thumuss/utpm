@@ -8,6 +8,7 @@ pub enum CLIOptions {
 
     Help,
     Force,
+    NoCopy,
 
     Unknown,
 
@@ -23,6 +24,7 @@ impl CLIOptions {
 
             CLIOptions::Help => String::from("--help"),
             CLIOptions::Force => String::from("--force"),
+            CLIOptions::NoCopy => String::from("--no-copy"),
             CLIOptions::Unknown => String::from("unknown"),
             CLIOptions::Token(aaa) => aaa.to_string(),
         }
@@ -54,20 +56,15 @@ impl Lexer {
         let mut next: u32 = 0;
         while i < self.args.len() {
             match self.args[i].as_str() {
-                "c" | "create" => {
-                    self.tokens.push_back(CLIOptions::Create);
-                }
-                "link" => {
-                    self.tokens.push_back(CLIOptions::Link);
-                }
-                "--help" | "-h" => {
-                    self.tokens.push_back(CLIOptions::Help);
-                    return;
-                },
-                "--force" | "-f" => {
-                    self.tokens.push_back(CLIOptions::Force);
-                    return;
-                },
+                "c" | "create" => self.tokens.push_back(CLIOptions::Create),
+
+                "link" => self.tokens.push_back(CLIOptions::Link),
+
+                "--help" | "-h" => self.tokens.push_back(CLIOptions::Help),
+
+                "--force" | "-f" => self.tokens.push_back(CLIOptions::Force),
+
+                "--no-copy" | "-nc" => self.tokens.push_back(CLIOptions::NoCopy),
 
                 _ => {
                     if next > 0 {

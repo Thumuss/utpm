@@ -6,6 +6,7 @@ pub enum GoodState {
     NothingToDo,
 }
 
+
 pub enum ErrorState {
     UnknowError(String),
 
@@ -16,6 +17,7 @@ pub enum ErrorState {
     NoneTokenError(String),
 }
 
+//TODO: Reimpl with real errors
 impl ErrorState {
     pub fn display(&self) {
         match self {

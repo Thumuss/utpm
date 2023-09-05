@@ -3,10 +3,14 @@
 
 Docs in WIP!
 
+
 # What is that?
 
 UTPM is a package manager for [local](https://github.com/typst/packages#local-packages) and remote (wip) packages.
 The goal is to manage packages to use the new feature of typst, [importing other packages from different folders](https://typst.app/docs/reference/scripting/#packages)
+
+# Why I didn't work on it for the last months
+I was missing a lot of times and a lot of motivation. Now I got time and motivation so you will see some updates!
 
 # How to use it?
 
@@ -24,16 +28,26 @@ $ utpm link
 
 # Install
 
-Download the project and then: 
+You will need Cargo and Rust.
 
+Simpliest way : 
 ```bash
-$ cargo build -r
+git clone https://github.com/ThumusLive/unofficial-typst-package-manager.git &&
+cd unofficial-typst-package-manager &&
+cargo install --path .
 ```
 
-You'll find the file in `target/release/unofficial-typst-package-manager`.
+# TODO: 
 
-On Linux, you can move the file to your PATH by moving the file for example:
+[ ] Reimpl errors
+[x] Last typst version
+[ ] More commands:
+    [ ] unlink
+[ ] Create `typst.toml` by asking questions
+[ ] ""pre-export"" package by giving them what they need
+[ ] use semver
 
-```bash
-$ sudo mv ./target/release/unofficial-typst-package-manager /usr/bin/utpm
-```
+# Contribution
+
+If you want to help me dev this package, simply make an issue or a PR 
+By using this app, you contribute to it, thank you! <3

@@ -17,29 +17,42 @@ pub mod state;
 #[skip_serializing_none]
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
 pub struct Package {
+    // Required
     pub name: String,
     pub version: String,
-    pub authors: Vec<String>,
     pub entrypoint: String,
-    pub license: String,
-    pub description: String,
-    pub repository: Option<String>,
-}
 
+    // Not required with local packages
+    pub authors: Option<Vec<String>>,
+    pub license: Option<String>,
+    pub description: Option<String>,
+
+    // Not required
+    pub repository: Option<String>,
+    pub homepage: Option<String>,
+    pub keywords: Option<Vec<String>>,
+    pub compiler: Option<String>,
+    pub exclude: Option<Vec<String>>,
+}
 
 impl Package {
     pub fn new() -> Self {
         Self {
             name: "example".to_string(),
-            version: "1.0.0".to_string(), 
-            repository: Some("example".to_string()),
-            authors: vec!["Thumus".to_string()],
+            version: "1.0.0".to_string(),
             entrypoint: String::from("./main.typ"),
-            description: String::from("An example"),
-            license: String::from("MIT"),
+
+            authors: Some(vec!["Thumus".to_string()]),
+            license: Some(String::from("MIT")),
+            description: Some(String::from("An example")),
+
+            repository: Some("https://github.com/ThumusLive/unofficial-typst-package-manager".to_string()),
+            homepage: Some("https://github.com/ThumusLive/unofficial-typst-package-manager".to_string()),
+            keywords: Some(vec!["typst".to_string(), "utpm".to_string()]),
+            compiler: Some("^0.7.0".to_string()),
+            exclude: Some(vec!["Thumus".to_string()]),
         }
     }
-    
 }
 
 #[derive(Serialize, Deserialize)]
@@ -66,7 +79,6 @@ impl TypstConfig {
     pub fn new(package: Package) -> Self {
         Self { package }
     }
-    
 }
 
 pub fn check_help(options: &VecDeque<CLIOptions>) -> bool {
@@ -89,4 +101,22 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<
         }
     }
     Ok(())
+}
+
+#[cfg(unix)]
+pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), std::io::Error> {
+    use std::os::unix::fs::symlink;
+    return match symlink(origin, new_path) {
+        Ok(_) => Ok(()),
+        Err(data) => Err(data),
+    };
+}
+
+#[cfg(windows)]
+pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), ()> {
+    use std::os::windows::fs::symlink_dir;
+    return match symlink_dir(origin, new_path) {
+        Ok(_) => Ok(()),
+        Err(data) => Err(()),
+    };
 }
