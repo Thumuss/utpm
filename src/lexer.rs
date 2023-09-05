@@ -5,30 +5,17 @@ pub enum CLIOptions {
     Create,
     Link,
     Unlink,
+    List,
 
     Help,
     Force,
+    
     NoCopy,
+    NoInteractive,
 
     Unknown,
 
     Token(String),
-}
-
-impl CLIOptions {
-    fn display(&self) -> String {
-        match self {
-            CLIOptions::Create => String::from("create"),
-            CLIOptions::Link => String::from("link"),
-            CLIOptions::Unlink => String::from("unlink"),
-
-            CLIOptions::Help => String::from("--help"),
-            CLIOptions::Force => String::from("--force"),
-            CLIOptions::NoCopy => String::from("--no-copy"),
-            CLIOptions::Unknown => String::from("unknown"),
-            CLIOptions::Token(aaa) => aaa.to_string(),
-        }
-    }
 }
 
 pub struct Lexer {
@@ -44,21 +31,15 @@ impl Lexer {
         }
     }
 
-    pub fn display_command(&self) {
-        for e in &self.tokens {
-            print!("{} ", e.display());
-        }
-        println!();
-    }
-
     pub fn read(&mut self) {
         let mut i: usize = 0;
         let mut next: u32 = 0;
         while i < self.args.len() {
             match self.args[i].as_str() {
-                "c" | "create" => self.tokens.push_back(CLIOptions::Create),
+                "create" | "c" => self.tokens.push_back(CLIOptions::Create),
 
-                "link" => self.tokens.push_back(CLIOptions::Link),
+                "link" | "lk" => self.tokens.push_back(CLIOptions::Link),
+                "list" | "ls" => self.tokens.push_back(CLIOptions::List),
 
                 "--help" | "-h" => self.tokens.push_back(CLIOptions::Help),
 

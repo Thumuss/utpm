@@ -7,7 +7,7 @@ use crate::{
         check_help, check_smt, copy_dir_all,
         paths::{check_path_dir, current_package, d_local, get_current_dir},
         state::{ErrorState, GoodState},
-        TypstConfig, symlink_all,
+        symlink_all, TypstConfig,
     },
 };
 

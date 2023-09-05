@@ -1,9 +1,11 @@
 use std::collections::VecDeque;
 
+use inquire::{required, Text};
+
 use crate::{
     lexer::CLIOptions,
     utils::{
-        check_help,
+        check_help, check_smt,
         paths::{check_path_file, get_current_dir},
         state::{ErrorState, GoodState},
         Package, TypstConfig,
@@ -30,8 +32,35 @@ impl CommandUTPM for Create {
         if check_path_file(&typ) {
             return Ok(GoodState::NothingToDo);
         }
+        let mut pkg = Package::new();
 
-        TypstConfig::new(Package::new()).write(&typ);
+        if /*!*/(check_smt(&self.options, CLIOptions::NoInteractive)) { 
+            todo!()
+            /*
+            pkg.name = Text::new("Name")
+                .with_validator(required!("This field is required"))
+                .with_help_message("e.g. my_example")
+                .prompt()
+                .unwrap();
+
+            pkg.version = Text::new("Version")
+                .with_validator(required!("This field is required"))
+                .with_help_message("e.g. 1.0.0 (SemVer)")
+                .with_default("1.0.0")
+                .prompt()
+                .unwrap();
+
+            pkg.entrypoint = Text::new("Entrypoint")
+                .with_validator(required!("This field is required"))
+                .with_help_message("e.g. ./main.typ")
+                .with_default("./main.typ")
+                .prompt()
+                .unwrap();
+
+            */
+        }
+
+        TypstConfig::new(pkg).write(&typ);
         Ok(GoodState::Good("File created!".to_string()))
     }
 

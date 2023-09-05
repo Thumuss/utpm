@@ -7,9 +7,11 @@ use crate::utils::state::{GoodState, ErrorState};
 pub mod link;
 pub mod unlink;
 pub mod create;
+pub mod list;
 
 use self::create::Create;
 use self::link::Link;
+use self::list::List;
 
 pub struct Parser {
     tokens: VecDeque<CLIOptions>,
@@ -31,11 +33,12 @@ impl Parser {
             Some(val) => match val {
                 CLIOptions::Link => Link::new(self.tokens.clone()).run(),
                 CLIOptions::Create => Create::new(self.tokens.clone()).run(),
+                CLIOptions::List => List::new(self.tokens.clone()).run(),
                 CLIOptions::Help => {
                     Self::help();
                     Ok(GoodState::Help)
                 }
-                _ => todo!(),
+                _ => Err(ErrorState::UnknowError(String::from("Unknown command!"))),
             },
             None => {
                 Self::help();
@@ -48,6 +51,7 @@ impl Parser {
                 GoodState::Help => (),
                 GoodState::Good(string) => println!("{}", string),
                 GoodState::NothingToDo => println!("Nothing to do!"),
+                GoodState::None => (),
             },
             Err(string) => string.display(),
         }
@@ -62,6 +66,7 @@ impl Parser {
         println!("Commands: ");
         println!("  create                      Create a new package to link the project");
         println!("  link                        Copy the folder into your share folder to make a new package (need a typst.toml file)");
+        println!("  list                        List all packages from the local directory");
         //println!("  unlink                      Remove the package of typst");
         println!();
         println!("Options: ");

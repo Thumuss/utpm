@@ -2,6 +2,7 @@ use colored::Colorize;
 
 pub enum GoodState {
     Good(String),
+    None,
     Help,
     NothingToDo,
 }

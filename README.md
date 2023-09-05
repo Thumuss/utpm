@@ -39,13 +39,14 @@ cargo install --path .
 
 # TODO: 
 
-[ ] Reimpl errors
-[x] Last typst version
-[ ] More commands:
-    [ ] unlink
-[ ] Create `typst.toml` by asking questions
-[ ] ""pre-export"" package by giving them what they need
-[ ] use semver
+- [ ] Reimpl errors
+- [x] Last typst version
+- [ ] More commands:
+    - [ ] unlink
+    - [x] List
+- [ ] Create `typst.toml` by asking questions
+- [ ] ""pre-export"" package by giving them what they need
+- [ ] use semver
 
 # Contribution
 
