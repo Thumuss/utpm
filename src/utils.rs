@@ -23,34 +23,42 @@ pub struct Package {
     pub entrypoint: String,
 
     // Not required with local packages
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub authors: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 
     // Not required
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub repository: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub homepage: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub compiler: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub exclude: Option<Vec<String>>,
 }
 
 impl Package {
     pub fn new() -> Self {
         Self {
-            name: "example".to_string(),
-            version: "1.0.0".to_string(),
-            entrypoint: String::from("./main.typ"),
+            name: "".to_string(),
+            version: "".to_string(),
+            entrypoint: "".to_string(),
 
-            authors: Some(vec!["Thumus".to_string()]),
-            license: Some(String::from("MIT")),
-            description: Some(String::from("An example")),
+            authors: None,
+            license: None,
+            description: None,
 
-            repository: Some("https://github.com/ThumusLive/unofficial-typst-package-manager".to_string()),
-            homepage: Some("https://github.com/ThumusLive/unofficial-typst-package-manager".to_string()),
-            keywords: Some(vec!["typst".to_string(), "utpm".to_string()]),
-            compiler: Some("^0.7.0".to_string()),
-            exclude: Some(vec!["Thumus".to_string()]),
+            repository: None,
+            homepage: None,
+            keywords: None,
+            compiler: None,
+            exclude: None,
         }
     }
 }
