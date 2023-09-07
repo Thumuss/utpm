@@ -13,6 +13,7 @@ serde_with = "1.0"
 colored = "2.0"
 toml = { version = "0.7.5", features = ["display"] }
 inquire = "0.6.2"
+semver = { version = "1.0.18", features = ["serde"] }
 
 [[bin]]
 name = "utpm"
