@@ -5,7 +5,7 @@ use std::{
 
 use dirs::data_dir;
 
-use super::state::ErrorState;
+use super::state::{ErrorState, Result};
 
 
 pub fn get_data_dir() -> String {
@@ -24,7 +24,7 @@ pub fn d_local() -> String {
 }
 
 
-pub fn get_current_dir() -> Result<String, ErrorState> {
+pub fn get_current_dir() -> Result<String> {
     match current_dir() {
         Ok(val) => match val.to_str() {
             Some(v) => Ok(String::from(v)),
@@ -36,7 +36,7 @@ pub fn get_current_dir() -> Result<String, ErrorState> {
     }
 }
 
-pub fn current_package() -> Result<String, ErrorState> {
+pub fn current_package() -> Result<String> {
     Ok(get_current_dir()? + "/typst.toml")
 }
 

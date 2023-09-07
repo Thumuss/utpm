@@ -39,7 +39,7 @@ cargo install --path .
 
 # TODO: 
 
-- [ ] Reimpl errors
+- [x] Reimpl errors
 - [x] Last typst version
 - [ ] More commands:
     - [ ] unlink

@@ -6,7 +6,7 @@ use crate::{
     utils::{
         check_help,
         paths::d_local,
-        state::{ErrorState, GoodState},
+        state::{GoodResult, GoodState},
     },
 };
 
@@ -21,37 +21,24 @@ impl CommandUTPM for List {
         Self { options }
     }
 
-    fn run(&mut self) -> Result<GoodState, ErrorState> {
+    fn run(&mut self) -> GoodResult {
         if check_help(&self.options) {
             Self::help();
             return Ok(GoodState::Help);
         }
         let typ = d_local();
-        let dirs = match fs::read_dir(&typ) {
-            Ok(val) => val,
-            Err(err) => return Err(ErrorState::UnknowError(err.to_string())),
-        };
+        let dirs = fs::read_dir(&typ)?;
 
         println!("List: ");
         for dir_res in dirs {
-
-            let dir = match dir_res {
-                Ok(val) => val,
-                Err(err) => return Err(ErrorState::UnknowError(err.to_string())),
-            };
+            let dir = dir_res?;
 
             println!(" {}", dir.file_name().to_str().unwrap());
 
-            let subdirs = match fs::read_dir(dir.path()) {
-                Ok(val) => val,
-                Err(err) => return Err(ErrorState::UnknowError(err.to_string())),
-            };
+            let subdirs = fs::read_dir(dir.path())?;
 
             for sub_dir_res in subdirs {
-                let subdir = match sub_dir_res {
-                    Ok(val) => val,
-                    Err(err) => return Err(ErrorState::UnknowError(err.to_string())),
-                };
+                let subdir = sub_dir_res?;
                 println!("  {}", subdir.file_name().to_str().unwrap());
             }
         }

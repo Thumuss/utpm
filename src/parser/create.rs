@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::collections::VecDeque;
 
-use inquire::{required, Select, Text, validator::Validation};
+use inquire::{required, validator::Validation, Select, Text};
 use semver::Version;
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
     utils::{
         check_help, check_smt,
         paths::{check_path_file, get_current_dir},
-        state::{ErrorState, GoodState},
+        state::{ErrorState, GoodState, GoodResult},
         Package, TypstConfig,
     },
 };
@@ -27,7 +27,7 @@ impl CommandUTPM for Create {
         Self { options }
     }
 
-    fn run(&mut self) -> Result<GoodState, ErrorState> {
+    fn run(&mut self) -> GoodResult {
         if check_help(&self.options) {
             Self::help();
             return Ok(GoodState::Help);
@@ -64,7 +64,9 @@ impl CommandUTPM for Create {
                     .with_validator(&|obj: &str| {
                         return match Version::parse(&obj) {
                             Ok(_) => Ok(Validation::Valid),
-                            Err(_) => Ok(Validation::Invalid("A correct version must be types (check semVer)".into()))
+                            Err(_) => Ok(Validation::Invalid(
+                                "A correct version must be types (check semVer)".into(),
+                            )),
                         };
                     })
                     .with_help_message("e.g. 1.0.0 (SemVer)")
@@ -96,6 +98,21 @@ impl CommandUTPM for Create {
                 pkg.license = Some(
                     Text::new("license: ")
                         .with_help_message("e.g. MIT")
+                        .with_default("Unlicense")
+                        .with_validator(&|obj: &str| match spdx::Expression::parse(obj) {
+                            Ok(val) => {
+                                for x in val.requirements() {
+                                    let id = x.req.license.id().unwrap();
+                                    if !id.is_osi_approved() {
+                                        return Ok(Validation::Invalid(
+                                            "It must be an OSI approved!".into(),
+                                        ));
+                                    }
+                                }
+                                Ok(Validation::Valid)
+                            }
+                            Err(_) => Ok(Validation::Invalid("Can't parse your expression".into())),
+                        })
                         .prompt()
                         .unwrap(),
                 );
@@ -171,7 +188,24 @@ impl CommandUTPM for Create {
                             pkg.authors = Some(vec![y]);
                         }
                     }
-                    CLIOptions::License => pkg.license = Some(y),
+                    CLIOptions::License => match spdx::Expression::parse(&y) {
+                        Ok(val) => {
+                            for x in val.requirements() {
+                                let id = x.req.license.id().unwrap();
+                                if !id.is_osi_approved() {
+                                    return Err(ErrorState::UnknowError(String::from(
+                                        "It must be an OSI approved!",
+                                    )));
+                                }
+                            }
+                            pkg.license = Some(y)
+                        }
+                        Err(_) => {
+                            return Err(ErrorState::UnknowError(
+                                "Can't parse your expression".to_string(),
+                            ))
+                        }
+                    },
                     CLIOptions::Description => pkg.description = Some(y),
                     CLIOptions::Repository => pkg.repository = Some(y),
                     CLIOptions::Homepage => pkg.homepage = Some(y),
@@ -211,8 +245,6 @@ impl CommandUTPM for Create {
         println!();
         println!("Options: ");
         println!("  --help, -h, h                           Print this message");
-        println!(
-            "  --force, -f                             Force the creation of the file (warning)"
-        );
+        println!("  --force, -f                             Force the creation of the file");
     }
 }

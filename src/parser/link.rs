@@ -6,7 +6,7 @@ use crate::{
     utils::{
         check_help, check_smt, copy_dir_all,
         paths::{check_path_dir, current_package, d_local, get_current_dir},
-        state::{ErrorState, GoodState},
+        state::{ErrorState, GoodResult, GoodState},
         symlink_all, TypstConfig,
     },
 };
@@ -22,19 +22,14 @@ impl CommandUTPM for Link {
         Self { options }
     }
 
-    fn run(&mut self) -> Result<GoodState, ErrorState> {
+    fn run(&mut self) -> GoodResult {
         let curr = get_current_dir()?;
         if check_help(&self.options) {
             Self::help();
             return Ok(GoodState::Help);
         }
 
-        let config = TypstConfig::load(
-            &(match current_package() {
-                Ok(val) => val,
-                Err(val) => return Err(val),
-            }),
-        );
+        let config = TypstConfig::load(&current_package()?);
 
         let name = config.package.name;
         let version = config.package.version;
@@ -43,34 +38,25 @@ impl CommandUTPM for Link {
         if check_path_dir(&path) && !check_smt(&self.options, CLIOptions::Force) {
             return Err(ErrorState::UnknowError(format!("This package ({}:{}) already exist!\n{info} Put --force to force the copy or change the version in 'typst.toml'", name, version)));
         }
-        match fs::create_dir_all(&path) {
-            Ok(_) => (),
-            Err(val) => return Err(ErrorState::UnknowError(val.to_string())),
-        }
+
+        fs::create_dir_all(&path)?;
 
         if check_smt(&self.options, CLIOptions::Force) {
-            match fs::remove_dir_all(&path) {
-                Ok(_) => (),
-                Err(val) => return Err(ErrorState::UnknowError(val.to_string())),
-            };
+            fs::remove_dir_all(&path)?
         }
 
         if check_smt(&self.options, CLIOptions::NoCopy) {
-            match symlink_all(&curr, &path) {
-                Ok(_) => Ok(GoodState::Good(format!(
-                    "Project link to: {} \nTry importing with:\n #import \"@local/{}:{}\": *",
-                    path, name, version
-                ))),
-                Err(val) => Err(ErrorState::UnknowError(val.to_string())),
-            }
+            symlink_all(&curr, &path)?;
+            Ok(GoodState::Good(format!(
+                "Project link to: {} \nTry importing with:\n #import \"@local/{}:{}\": *",
+                path, name, version
+            )))
         } else {
-            match copy_dir_all(get_current_dir()?, &path) {
-                Ok(_) => Ok(GoodState::Good(format!(
-                    "Project copied to: {}\nTry importing with:\n #import \"@local/{}:{}\": *",
-                    path, name, version
-                ))),
-                Err(val) => Err(ErrorState::UnknowError(val.to_string())),
-            }
+            copy_dir_all(get_current_dir()?, &path)?;
+            Ok(GoodState::Good(format!(
+                "Project licopiednk to: {} \nTry importing with:\n #import \"@local/{}:{}\": *",
+                path, name, version
+            )))
         }
     }
 

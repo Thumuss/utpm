@@ -53,7 +53,7 @@ impl Parser {
                 GoodState::NothingToDo => println!("Nothing to do!"),
                 GoodState::None => (),
             },
-            Err(string) => string.display(),
+            Err(string) => println!("{}", string),
         }
     }
 
@@ -67,7 +67,6 @@ impl Parser {
         println!("  create                      Create a new package to link the project");
         println!("  link                        Copy the folder into your share folder to make a new package (need a typst.toml file)");
         println!("  list                        List all packages from the local directory");
-        //println!("  unlink                      Remove the package of typst");
         println!();
         println!("Options: ");
         println!("  --help, -h, h               Print this message or the message assosiate to the command");

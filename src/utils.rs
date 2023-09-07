@@ -37,6 +37,7 @@ pub struct Package {
     pub exclude: Option<Vec<String>>,
 }
 
+
 impl Package {
     pub fn new() -> Self {
         Self {
@@ -115,7 +116,7 @@ pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), std::io::Error> {
 }
 
 #[cfg(windows)]
-pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), ()> {
+pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), std::io::Error> {
     use std::os::windows::fs::symlink_dir;
     return match symlink_dir(origin, new_path) {
         Ok(_) => Ok(()),

@@ -1,4 +1,5 @@
 use colored::Colorize;
+use std::fmt;
 
 pub enum GoodState {
     Good(String),
@@ -6,7 +7,6 @@ pub enum GoodState {
     Help,
     NothingToDo,
 }
-
 
 pub enum ErrorState {
     UnknowError(String),
@@ -18,22 +18,34 @@ pub enum ErrorState {
     NoneTokenError(String),
 }
 
-impl ErrorState {
-    pub fn display(&self) {
+pub type Result<T> = std::result::Result<T, ErrorState>;
+pub type GoodResult = std::result::Result<GoodState, ErrorState>;
+
+impl fmt::Display for ErrorState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            ErrorState::UnknowError(string) => eprintln!("{}: {string}", "Error".red().bold()),
+            ErrorState::UnknowError(string) => write!(f, "{}: {string}", "Error".red().bold()),
             ErrorState::CurrentDirectoryError(string) => {
-                eprintln!("{}: {string}", "Current Directory Error".red().bold(),)
+                write!(f, "{}: {string}", "Current Directory Error".red().bold(),)
             }
+
             ErrorState::CreationDirectoryError(string) => {
-                eprintln!("{}: {string}", "Creation Directory Error".red().bold(),)
+                write!(f, "{}: {string}", "Creation Directory Error".red().bold(),)
             }
+
             ErrorState::UnexpectedTokenError(string) => {
-                eprintln!("{}: {string}", "Unexpected Token Error".red().bold(),)
+                write!(f, "{}: {string}", "Unexpected Token Error".red().bold(),)
             }
+
             ErrorState::NoneTokenError(string) => {
-                eprintln!("{}: {string}", "None Token Error".red().bold(),)
+                write!(f, "{}: {string}", "None Token Error".red().bold(),)
             }
         }
+    }
+}
+
+impl From<std::io::Error> for ErrorState {
+    fn from(err: std::io::Error) -> ErrorState {
+        ErrorState::UnknowError(err.to_string())
     }
 }
