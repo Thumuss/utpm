@@ -6,6 +6,7 @@ use std::{
 
 use std::io;
 
+use semver::Version;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
@@ -19,27 +20,20 @@ pub mod state;
 pub struct Package {
     // Required
     pub name: String,
-    pub version: String,
+
+    pub version: Version,
     pub entrypoint: String,
 
     // Not required with local packages
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub authors: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 
     // Not required
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub repository: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub homepage: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub compiler: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub exclude: Option<Vec<String>>,
 }
 
@@ -47,8 +41,8 @@ impl Package {
     pub fn new() -> Self {
         Self {
             name: "".to_string(),
-            version: "".to_string(),
-            entrypoint: "".to_string(),
+            version: Version::new(1, 0, 0),
+            entrypoint: "./main.typ".to_string(),
 
             authors: None,
             license: None,

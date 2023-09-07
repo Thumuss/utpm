@@ -1,6 +1,8 @@
+use colored::Colorize;
 use std::collections::VecDeque;
 
-use inquire::{required, Confirm, Text};
+use inquire::{required, Select, Text, validator::Validation};
+use semver::Version;
 
 use crate::{
     lexer::CLIOptions,
@@ -13,6 +15,8 @@ use crate::{
 };
 
 use super::CommandUTPM;
+
+static TYPES: [&str; 3] = ["Local", "Public", "Public with more options"];
 
 pub struct Create {
     options: VecDeque<CLIOptions>,
@@ -35,24 +39,41 @@ impl CommandUTPM for Create {
         }
 
         if force {
-            println!("WARNING: --force is a dangerous flag, use it cautiously")
+            println!(
+                "{} {}",
+                "WARNING:".bold().yellow(),
+                "--force is a dangerous flag, use it cautiously".bold()
+            )
         }
 
         let mut pkg = Package::new();
-
         if !(check_smt(&self.options, CLIOptions::NoInteractive)) {
+            let x = Select::new("Choose one type of package: ", TYPES.to_vec())
+                .prompt()
+                .unwrap();
+
             pkg.name = Text::new("Name: ")
                 .with_validator(required!("This field is required"))
                 .with_help_message("e.g. my_example")
                 .prompt()
                 .unwrap();
 
-            pkg.version = Text::new("Version: ")
-                .with_validator(required!("This field is required"))
-                .with_help_message("e.g. 1.0.0 (SemVer)")
-                .with_default("1.0.0")
-                .prompt()
-                .unwrap();
+            pkg.version = Version::parse(
+                Text::new("Version: ")
+                    .with_validator(required!("This field is required"))
+                    .with_validator(&|obj: &str| {
+                        return match Version::parse(&obj) {
+                            Ok(_) => Ok(Validation::Valid),
+                            Err(_) => Ok(Validation::Invalid("A correct version must be types (check semVer)".into()))
+                        };
+                    })
+                    .with_help_message("e.g. 1.0.0 (SemVer)")
+                    .with_default("1.0.0")
+                    .prompt()
+                    .unwrap()
+                    .as_str(),
+            )
+            .unwrap();
 
             pkg.entrypoint = Text::new("Entrypoint: ")
                 .with_validator(required!("This field is required"))
@@ -61,12 +82,7 @@ impl CommandUTPM for Create {
                 .prompt()
                 .unwrap();
 
-            if Confirm::new("Are you going to publish it?")
-                .with_default(false)
-                .with_help_message("More questions will come if yes")
-                .prompt()
-                .unwrap()
-            {
+            if x == TYPES[1] || x == TYPES[2] {
                 pkg.authors = Some(
                     Text::new("Authors: ")
                         .with_help_message("e.g. Thumus,Somebody,Somebody Else")
@@ -91,17 +107,10 @@ impl CommandUTPM for Create {
                         .unwrap(),
                 );
 
-                if Confirm::new("Do you want more options ?")
-                    .with_default(false)
-                    .with_help_message(
-                        "Options are : repository, homepage, keywords, compiler, exclude",
-                    )
-                    .prompt()
-                    .unwrap()
-                {
+                if x == TYPES[2] {
                     pkg.repository = Some(
                         Text::new("URL of the repository: ")
-                            .with_help_message("e.g. https://github.com/ThumusLive/unofficial-typst-package-manager")
+                            .with_help_message("e.g. https://github.com/ThumusLive/utpm")
                             .prompt()
                             .unwrap(),
                     );
@@ -137,10 +146,58 @@ impl CommandUTPM for Create {
                     );
                 }
             }
-        }
+        } else {
+            let _ = &self.options.pop_front();
+            if force {
+                let _ = &self.options.pop_front();
+            }
+            if !check_smt(&self.options, CLIOptions::Name) {
+                return Err(ErrorState::UnknowError("Need the param --name".to_string()));
+            }
+            while self.options.len() > 0 {
+                let x = self.options.pop_front().unwrap();
+                let y = match self.options.pop_front().unwrap() {
+                    CLIOptions::Token(content) => content,
+                    _ => return Err(ErrorState::UnknowError("Unknown Token".to_string())),
+                };
+                match x {
+                    CLIOptions::Name => pkg.name = y,
+                    CLIOptions::SelectVersion => pkg.version = Version::parse(y.as_str()).unwrap(),
+                    CLIOptions::Entrypoint => pkg.entrypoint = y,
+                    CLIOptions::Author => {
+                        if let Some(ref mut vector) = pkg.authors {
+                            vector.push(y);
+                        } else {
+                            pkg.authors = Some(vec![y]);
+                        }
+                    }
+                    CLIOptions::License => pkg.license = Some(y),
+                    CLIOptions::Description => pkg.description = Some(y),
+                    CLIOptions::Repository => pkg.repository = Some(y),
+                    CLIOptions::Homepage => pkg.homepage = Some(y),
 
+                    CLIOptions::Keyword => {
+                        if let Some(ref mut vector) = pkg.keywords {
+                            vector.push(y);
+                        } else {
+                            pkg.authors = Some(vec![y]);
+                        }
+                    }
+                    CLIOptions::Compiler => pkg.compiler = Some(y),
+
+                    CLIOptions::Exclude => {
+                        if let Some(ref mut vector) = pkg.exclude {
+                            vector.push(y);
+                        } else {
+                            pkg.authors = Some(vec![y]);
+                        }
+                    }
+                    _ => return Err(ErrorState::UnknowError("Bad options passed".to_string())),
+                }
+            }
+        }
         TypstConfig::new(pkg).write(&typ);
-        Ok(GoodState::Good("File created!".to_string()))
+        Ok(GoodState::Good("File created!".bold().to_string()))
     }
 
     fn help() {
@@ -154,6 +211,8 @@ impl CommandUTPM for Create {
         println!();
         println!("Options: ");
         println!("  --help, -h, h                           Print this message");
-        println!("  --force, -f                             Force the creation of the file (warning)");
+        println!(
+            "  --force, -f                             Force the creation of the file (warning)"
+        );
     }
 }

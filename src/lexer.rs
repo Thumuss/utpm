@@ -13,6 +13,23 @@ pub enum CLIOptions {
     NoCopy,
     NoInteractive,
 
+    //For Non-interactive
+    Name,
+    Entrypoint,
+    SelectVersion,
+
+    Author,
+    License,
+    Description,
+
+    Repository,
+    Homepage,
+    Keyword,
+    Compiler,
+    Exclude,
+
+
+
     Unknown,
 
     Token(String),
@@ -46,6 +63,59 @@ impl Lexer {
                 "--force" | "-f" => self.tokens.push_back(CLIOptions::Force),
 
                 "--no-copy" | "-nc" => self.tokens.push_back(CLIOptions::NoCopy),
+                
+                // For Non-interactive:
+
+                "--no-interactive" | "-ni" => self.tokens.push_back(CLIOptions::NoInteractive),
+
+                "--name" | "-n" => {
+                    self.tokens.push_back(CLIOptions::Name);
+                    next += 1;
+                }
+                "--ver" => {
+                    self.tokens.push_back(CLIOptions::SelectVersion);
+                    next += 1;
+                }
+                "--entrypoint" | "-e" => {
+                    self.tokens.push_back(CLIOptions::Entrypoint);
+                    next += 1;
+                }
+
+                "--author" | "-a" => {
+                    self.tokens.push_back(CLIOptions::Author);
+                    next += 1;
+                }
+
+                "--licence" | "-l" => {
+                    self.tokens.push_back(CLIOptions::License);
+                    next += 1;
+                }
+                "--description" | "--desc" | "-d" => {
+                    self.tokens.push_back(CLIOptions::Description);
+                    next += 1;
+                }
+                "--repository" | "-r" => {
+                    self.tokens.push_back(CLIOptions::Repository);
+                    next += 1;
+                }
+                "--homepage" | "-hp" => {
+                    self.tokens.push_back(CLIOptions::Homepage);
+                    next += 1;
+                }
+                "--keyword" | "-k" => {
+                    self.tokens.push_back(CLIOptions::Keyword);
+                    next += 1;
+                }
+                "--compiler" | "-c" => {
+                    self.tokens.push_back(CLIOptions::Compiler);
+                    next += 1;
+                }
+                "--exclude" | "-x" => {
+                    self.tokens.push_back(CLIOptions::Exclude);
+                    next += 1;
+                }
+
+
 
                 _ => {
                     if next > 0 {

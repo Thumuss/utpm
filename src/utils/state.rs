@@ -18,7 +18,6 @@ pub enum ErrorState {
     NoneTokenError(String),
 }
 
-//TODO: Reimpl with real errors
 impl ErrorState {
     pub fn display(&self) {
         match self {
