@@ -32,8 +32,8 @@ You will need Cargo and Rust.
 
 Simpliest way : 
 ```bash
-git clone https://github.com/ThumusLive/unofficial-typst-package-manager.git &&
-cd unofficial-typst-package-manager &&
+git clone https://github.com/ThumusLive/utpm.git &&
+cd utpm &&
 cargo install --path .
 ```
 
@@ -44,11 +44,12 @@ cargo install --path .
 - [ ] More commands:
     - [ ] unlink
     - [x] List
-- [ ] Create `typst.toml` by asking questions
+- [x] Create `typst.toml` by asking questions
 - [ ] ""pre-export"" package by giving them what they need
-- [ ] use semver
+- [x] use semver
 
 # Contribution
 
 If you want to help me dev this package, simply make an issue or a PR 
+
 By using this app, you contribute to it, thank you! <3

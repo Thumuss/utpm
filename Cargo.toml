@@ -1,5 +1,5 @@
 [package]
-name = "unofficial-typst-package-manager"
+name = "utpm"
 version = "0.1.0"
 edition = "2021"
 

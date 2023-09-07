@@ -1,2 +1,3 @@
-cargo build -r && \
-sudo mv ./target/release/unofficial-typst-package-manager /usr/bin/utpm
+git clone https://github.com/ThumusLive/utpm.git &&
+cd utpm &&
+cargo install --path .
