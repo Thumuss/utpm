@@ -15,32 +15,24 @@ I was missing a lot of times and a lot of motivation. Now I got time and motivat
 
 # How to use it?
 
-
-
-
-
-
-
-
-
-
-Simple as:
-
-> Create a typst.toml file
+You need two things, first create an `typst.toml` file by using `utpm create`:
 
 ```bash
 $ utpm create
 ```
 
+Example:
+
 https://github.com/ThumusLive/utpm/assets/42680097/473f4826-773b-4b2c-9a31-3af5756799c2
 
 Modify this file to match your project and then:
 
-> Move it
+And finally, you need to copy the directory to the "special" directory by using `utpm link`: 
 
 ```bash
 $ utpm link
 ```
+Example:
 
 https://github.com/ThumusLive/utpm/assets/42680097/92c06cba-928f-4ffb-b2ca-dae67ff7b32d
 
@@ -56,16 +48,20 @@ cd utpm &&
 cargo install --path .
 ```
 
+There is a `build.sh` to install/update the project.
+
 # TODO:
 
 - [x] Reimpl errors
 - [x] Last typst version
 - [ ] More commands:
-  - [ ] unlink
+  - [ ] Unlink
   - [x] List
 - [x] Create `typst.toml` by asking questions
 - [ ] ""pre-export"" package by giving them what they need
 - [x] use semver
+- [ ] Use custom packages namespace (e.g "@custom/example:1.0.1")
+- [ ] Fix typo
 
 # Contribution
 

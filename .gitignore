@@ -2,8 +2,3 @@
 .utpm
 .vscode
 utpm
-backup
-typst.toml
-*.typ
-*.typst
-*.pdf
