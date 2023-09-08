@@ -15,6 +15,15 @@ I was missing a lot of times and a lot of motivation. Now I got time and motivat
 
 # How to use it?
 
+
+
+
+
+
+
+
+
+
 Simple as:
 
 > Create a typst.toml file
@@ -23,6 +32,8 @@ Simple as:
 $ utpm create
 ```
 
+https://github.com/ThumusLive/utpm/assets/42680097/473f4826-773b-4b2c-9a31-3af5756799c2
+
 Modify this file to match your project and then:
 
 > Move it
@@ -30,6 +41,8 @@ Modify this file to match your project and then:
 ```bash
 $ utpm link
 ```
+
+https://github.com/ThumusLive/utpm/assets/42680097/92c06cba-928f-4ffb-b2ca-dae67ff7b32d
 
 # Install
 
