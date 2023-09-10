@@ -4,8 +4,6 @@ use std::fmt;
 pub enum GoodState {
     Good(String),
     None,
-    Help,
-    NothingToDo,
 }
 
 pub enum ErrorState {

@@ -1,5 +1,4 @@
 use std::{
-    collections::VecDeque,
     fs::{self, read_to_string},
     path::Path,
 };
@@ -9,8 +8,6 @@ use std::io;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
-
-use crate::lexer::CLIOptions;
 
 pub mod paths;
 pub mod state;
@@ -33,7 +30,7 @@ pub struct Package {
     pub repository: Option<String>,
     pub homepage: Option<String>,
     pub keywords: Option<Vec<String>>,
-    pub compiler: Option<String>,
+    pub compiler: Option<Version>,
     pub exclude: Option<Vec<String>>,
 }
 
@@ -84,13 +81,6 @@ impl TypstConfig {
     }
 }
 
-pub fn check_help(options: &VecDeque<CLIOptions>) -> bool {
-    check_smt(options, CLIOptions::Help)
-}
-
-pub fn check_smt(options: &VecDeque<CLIOptions>, obj: CLIOptions) -> bool {
-    options.iter().any(|val| matches!(val, a if a == &obj))
-}
 
 pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
     fs::create_dir_all(&dst)?;

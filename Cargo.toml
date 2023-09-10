@@ -15,6 +15,7 @@ toml = { version = "0.7.5", features = ["display"] }
 inquire = "0.6.2"
 semver = { version = "1.0.18", features = ["serde"] }
 spdx = "0.10.2"
+clap = { version = "4.4.2", features = ["derive"] }
 
 [[bin]]
 name = "utpm"
