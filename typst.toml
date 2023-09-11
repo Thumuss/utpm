@@ -1,0 +1,8 @@
+[package]
+name = "tetss"
+version = "1.0.0"
+entrypoint = "./main.typ"
+
+[utpm]
+version = "1"
+namespace = "local"

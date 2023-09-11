@@ -3,7 +3,7 @@ pub mod commands;
 
 use clap::{Parser, Subcommand};
 use commands::{create, link, list, unlink};
-use utils::Package;
+use utils::{Package, Extra};
 use utils::state::GoodState;
 
 #[derive(Parser)]
@@ -71,6 +71,10 @@ enum Commands {
         /// Excludes files
         #[arg(short='x',long)]
         exclude: Option<Vec<String>>,
+
+        /// Excludes files
+        #[arg(short='N',long)]
+        namespace: Option<String>,
     },
     /// Link your project to your dirs
     Link {
@@ -89,24 +93,31 @@ enum Commands {
         name: String,
 
         #[arg(short, long)]
+        namespace: Option<String>,
+
+        #[arg(short, long)]
         version: Option<semver::Version>,
     },
 }
 fn main() {
     let x = Cli::parse();
     let res = match &x.command {
-        Commands::Create { cli, force, name, version, entrypoint, authors, license, description, repository, homepage, keywords, compiler, exclude } => {
+        Commands::Create { cli, force, name, version, entrypoint, authors, license, description, repository, homepage, keywords, compiler, exclude , namespace} => {
             let pkg: Package = Package { name: name.clone().unwrap_or("".to_string()), version: version.clone(), entrypoint: entrypoint.clone(), authors: authors.clone(), license: license.clone(), description: description.clone(), repository: repository.clone(), homepage: homepage.clone(), keywords: keywords.clone(), compiler: compiler.clone(), exclude: exclude.clone() };
-            create::create(*force, *cli, pkg)
+            let mut extra: Extra = Extra::new();
+            if let Some(namesp) = namespace {
+                extra.namespace = namesp.clone();
+            }
+            create::run(*force, *cli, pkg, extra)
         },
         Commands::Link { force, no_copy } => {
-            link::link(*force, *no_copy)
+            link::run(*force, *no_copy)
         }
         Commands::List {  } => {
-            list::list()
+            list::run()
         },
-        Commands::Unlink { name, version } => {
-            unlink::unlink(name.clone(), version.clone())
+        Commands::Unlink { name, version, namespace } => {
+            unlink::run(name.clone(), version.clone(), namespace.clone())
         }
     };
 

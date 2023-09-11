@@ -7,7 +7,6 @@ use dirs::data_dir;
 
 use super::state::{ErrorState, Result};
 
-
 pub fn get_data_dir() -> String {
     match data_dir() {
         Some(dir) => match dir.to_str() {
@@ -18,11 +17,9 @@ pub fn get_data_dir() -> String {
     }
 }
 
-
-pub fn d_local() -> String {
-    get_data_dir() + "/typst/packages/local"
+pub fn d_packages() -> String {
+    get_data_dir() + "/typst/packages"
 }
-
 
 pub fn get_current_dir() -> Result<String> {
     match current_dir() {
@@ -39,7 +36,6 @@ pub fn get_current_dir() -> Result<String> {
 pub fn current_package() -> Result<String> {
     Ok(get_current_dir()? + "/typst.toml")
 }
-
 
 pub fn check_path_dir(path: &String) -> bool {
     read_dir(path).is_ok()

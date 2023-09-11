@@ -1,27 +1,32 @@
-use std::fs;
 use colored::Colorize;
+use std::fs;
 
 use crate::utils::{
-    paths::d_local,
+    paths::d_packages,
     state::{GoodResult, GoodState},
 };
 
-pub fn list() -> GoodResult {
-    let typ = d_local();
-    let dirs = fs::read_dir(&typ)?;
+pub fn run() -> GoodResult {
+    let typ = d_packages();
 
     println!("{}", "Tree listing of your packages\n".bold());
-    println!("{}", "@local: ".bright_green());
+    let dirs = fs::read_dir(&typ)?;
     for dir_res in dirs {
         let dir = dir_res?;
+        println!("@{}:", dir.file_name().to_str().unwrap().green().bold());
+        let subupdirs = fs::read_dir(dir.path())?;
 
-        println!("  {}:", dir.file_name().to_str().unwrap().green().bold());
+        for dir_res in subupdirs {
+            let dir = dir_res?;
 
-        let subdirs = fs::read_dir(dir.path())?;
+            println!("  {}:", dir.file_name().to_str().unwrap().green().bold());
 
-        for sub_dir_res in subdirs {
-            let subdir = sub_dir_res?;
-            println!("    - {}", subdir.file_name().to_str().unwrap().green());
+            let subdirs = fs::read_dir(dir.path())?;
+
+            for sub_dir_res in subdirs {
+                let subdir = sub_dir_res?;
+                println!("    - {}", subdir.file_name().to_str().unwrap().green());
+            }
         }
     }
     Ok(GoodState::Good(String::from("")))

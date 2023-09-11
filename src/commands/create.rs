@@ -1,17 +1,17 @@
 use colored::Colorize;
 
-use inquire::{required, validator::Validation, Select, Text};
+use inquire::{list_option::ListOption, required, validator::Validation, MultiSelect, Text};
 use semver::Version;
 
 use crate::utils::{
     paths::{check_path_file, get_current_dir},
     state::{GoodResult, GoodState},
-    Package, TypstConfig,
+    Extra, Package, TypstConfig,
 };
 
-static TYPES: [&str; 3] = ["Local", "Public", "Public with more options"];
+static TYPES: [&str; 4] = ["Local", "Public", "More options", "Namespace"];
 
-pub fn create(force: bool, cli: bool, mut pkg: Package) -> GoodResult {
+pub fn run(force: bool, cli: bool, mut pkg: Package, mut extra: Extra) -> GoodResult {
     let typ = get_current_dir()? + "/typst.toml";
     if check_path_file(&typ) && !force {
         return Ok(GoodState::None);
@@ -26,9 +26,27 @@ pub fn create(force: bool, cli: bool, mut pkg: Package) -> GoodResult {
     }
 
     if !cli {
-        let x = Select::new("Choose one type of package: ", TYPES.to_vec())
-            .prompt()
-            .unwrap();
+        let x = MultiSelect::new(
+            "Choose between local and public package and options: ",
+            TYPES.to_vec(),
+        )
+        .with_validator(|a: &[ListOption<&&str>]| {
+            let x = a
+                .iter()
+                .any(|o| *o.value == "Local" || *o.value == "Public");
+            match x {
+                true => Ok(Validation::Valid),
+                false => Ok(Validation::Invalid(
+                    "Remember to chose between public and local".into(),
+                )),
+            }
+        })
+        .prompt()
+        .unwrap();
+
+        let public = x.contains(&TYPES[1]);
+        let more = x.contains(&TYPES[2]);
+        let extra_opts = x.contains(&TYPES[3]);
 
         pkg.name = Text::new("Name: ")
             .with_validator(required!("This field is required"))
@@ -62,7 +80,7 @@ pub fn create(force: bool, cli: bool, mut pkg: Package) -> GoodResult {
             .prompt()
             .unwrap();
 
-        if x == TYPES[1] || x == TYPES[2] {
+        if public {
             pkg.authors = Some(
                 Text::new("Authors: ")
                     .with_help_message("e.g. Thumus,Somebody,Somebody Else")
@@ -101,59 +119,67 @@ pub fn create(force: bool, cli: bool, mut pkg: Package) -> GoodResult {
                     .prompt()
                     .unwrap(),
             );
-
-            if x == TYPES[2] {
-                pkg.repository = Some(
-                    Text::new("URL of the repository: ")
-                        .with_help_message("e.g. https://github.com/ThumusLive/utpm")
-                        .prompt()
-                        .unwrap(),
-                );
-                pkg.homepage = Some(
-                    Text::new("Homepage: ")
-                        .with_help_message("e.g. anything")
-                        .prompt()
-                        .unwrap(),
-                );
-                pkg.keywords = Some(
-                    Text::new("Authors: ")
-                        .with_help_message("e.g. Typst,keyword")
-                        .prompt()
-                        .unwrap()
-                        .split(",")
-                        .map(|f| f.to_string())
-                        .collect::<Vec<String>>(),
-                );
-                pkg.compiler = Some(
-                    Version::parse(
-                        Text::new("Compiler version required: ")
-                            .with_help_message("e.g. 0.7.0")
-                            .with_validator(&|obj: &str| {
-                                return match Version::parse(&obj) {
-                                    Ok(_) => Ok(Validation::Valid),
-                                    Err(_) => Ok(Validation::Invalid(
-                                        "A correct version must be types (check semVer)".into(),
-                                    )),
-                                };
-                            })
-                            .prompt()
-                            .unwrap()
-                            .as_str(),
-                    )
+        }
+        if more {
+            pkg.repository = Some(
+                Text::new("URL of the repository: ")
+                    .with_help_message("e.g. https://github.com/ThumusLive/utpm")
+                    .prompt()
                     .unwrap(),
-                );
-                pkg.exclude = Some(
-                    Text::new("Exclude: ")
-                        .with_help_message("e.g. backup/mypassword.txt,.env")
+            );
+            pkg.homepage = Some(
+                Text::new("Homepage: ")
+                    .with_help_message("e.g. anything")
+                    .prompt()
+                    .unwrap(),
+            );
+            pkg.keywords = Some(
+                Text::new("Authors: ")
+                    .with_help_message("e.g. Typst,keyword")
+                    .prompt()
+                    .unwrap()
+                    .split(",")
+                    .map(|f| f.to_string())
+                    .collect::<Vec<String>>(),
+            );
+            pkg.compiler = Some(
+                Version::parse(
+                    Text::new("Compiler version required: ")
+                        .with_help_message("e.g. 0.7.0")
+                        .with_validator(&|obj: &str| {
+                            return match Version::parse(&obj) {
+                                Ok(_) => Ok(Validation::Valid),
+                                Err(_) => Ok(Validation::Invalid(
+                                    "A correct version must be types (check semVer)".into(),
+                                )),
+                            };
+                        })
                         .prompt()
                         .unwrap()
-                        .split(",")
-                        .map(|f| f.to_string())
-                        .collect::<Vec<String>>(),
-                );
-            }
+                        .as_str(),
+                )
+                .unwrap(),
+            );
+            pkg.exclude = Some(
+                Text::new("Exclude: ")
+                    .with_help_message("e.g. backup/mypassword.txt,.env")
+                    .prompt()
+                    .unwrap()
+                    .split(",")
+                    .map(|f| f.to_string())
+                    .collect::<Vec<String>>(),
+            );
+        }
+
+        if extra_opts {
+            extra.namespace = Text::new("Namespace: ")
+                .with_help_message("e.g. backup/mypassword.txt,.env")
+                .with_default("local")
+                .prompt()
+                .unwrap()
+                .to_string()
         }
     }
-    TypstConfig::new(pkg).write(&typ);
+    TypstConfig::new(pkg, extra).write(&typ);
     Ok(GoodState::Good("File created!".bold().to_string()))
 }

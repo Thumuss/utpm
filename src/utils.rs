@@ -56,7 +56,17 @@ impl Package {
 
 #[derive(Serialize, Deserialize)]
 pub struct Extra {
-    version: String,
+    pub version: String,
+    pub namespace: String
+}
+
+impl Extra {
+    pub fn new() -> Self {
+        Self {
+            version: "1".to_string(),
+            namespace: "local".to_string()
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -81,12 +91,10 @@ impl TypstConfig {
         fs::write(path, form).expect("aaa");
     }
 
-    pub fn new(package: Package) -> Self {
+    pub fn new(package: Package, extra: Extra) -> Self {
         Self {
             package,
-            utpm: Extra {
-                version: "1".to_string(),
-            },
+            utpm: extra
         }
     }
 }
