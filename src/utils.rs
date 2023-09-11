@@ -34,7 +34,6 @@ pub struct Package {
     pub exclude: Option<Vec<String>>,
 }
 
-
 impl Package {
     pub fn new() -> Self {
         Self {
@@ -56,8 +55,14 @@ impl Package {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct Extra {
+    version: String,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct TypstConfig {
     pub package: Package,
+    pub utpm: Extra,
 }
 
 impl TypstConfig {
@@ -77,10 +82,14 @@ impl TypstConfig {
     }
 
     pub fn new(package: Package) -> Self {
-        Self { package }
+        Self {
+            package,
+            utpm: Extra {
+                version: "1".to_string(),
+            },
+        }
     }
 }
-
 
 pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
     fs::create_dir_all(&dst)?;
@@ -99,17 +108,11 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<
 #[cfg(unix)]
 pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), std::io::Error> {
     use std::os::unix::fs::symlink;
-    return match symlink(origin, new_path) {
-        Ok(_) => Ok(()),
-        Err(data) => Err(data),
-    };
+    symlink(origin, new_path)
 }
 
 #[cfg(windows)]
 pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), std::io::Error> {
     use std::os::windows::fs::symlink_dir;
-    return match symlink_dir(origin, new_path) {
-        Ok(_) => Ok(()),
-        Err(data) => Err(()),
-    };
+    symlink_dir(origin, new_path)
 }

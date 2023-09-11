@@ -2,7 +2,7 @@ pub mod utils;
 pub mod commands;
 
 use clap::{Parser, Subcommand};
-use commands::{create, link, list};
+use commands::{create, link, list, unlink};
 use utils::Package;
 use utils::state::GoodState;
 
@@ -84,6 +84,13 @@ enum Commands {
     },
     /// List all of the package in the local folder
     List {},
+
+    Unlink {
+        name: String,
+
+        #[arg(short, long)]
+        version: Option<semver::Version>,
+    },
 }
 fn main() {
     let x = Cli::parse();
@@ -97,6 +104,9 @@ fn main() {
         }
         Commands::List {  } => {
             list::list()
+        },
+        Commands::Unlink { name, version } => {
+            unlink::unlink(name.clone(), version.clone())
         }
     };
 

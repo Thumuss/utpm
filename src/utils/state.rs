@@ -47,3 +47,9 @@ impl From<std::io::Error> for ErrorState {
         ErrorState::UnknowError(err.to_string())
     }
 }
+
+impl From<inquire::InquireError> for ErrorState {
+    fn from(err:  inquire::InquireError) -> ErrorState {
+        ErrorState::UnknowError(err.to_string())
+    }   
+}
