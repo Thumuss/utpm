@@ -1,5 +1,4 @@
 use std::{
-    collections::VecDeque,
     fs::{self, read_to_string},
     path::Path,
 };
@@ -9,8 +8,6 @@ use std::io;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
-
-use crate::lexer::CLIOptions;
 
 pub mod paths;
 pub mod state;
@@ -33,10 +30,9 @@ pub struct Package {
     pub repository: Option<String>,
     pub homepage: Option<String>,
     pub keywords: Option<Vec<String>>,
-    pub compiler: Option<String>,
+    pub compiler: Option<Version>,
     pub exclude: Option<Vec<String>>,
 }
-
 
 impl Package {
     pub fn new() -> Self {
@@ -59,8 +55,24 @@ impl Package {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct Extra {
+    pub version: String,
+    pub namespace: String
+}
+
+impl Extra {
+    pub fn new() -> Self {
+        Self {
+            version: "1".to_string(),
+            namespace: "local".to_string()
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct TypstConfig {
     pub package: Package,
+    pub utpm: Extra,
 }
 
 impl TypstConfig {
@@ -79,17 +91,12 @@ impl TypstConfig {
         fs::write(path, form).expect("aaa");
     }
 
-    pub fn new(package: Package) -> Self {
-        Self { package }
+    pub fn new(package: Package, extra: Extra) -> Self {
+        Self {
+            package,
+            utpm: extra
+        }
     }
-}
-
-pub fn check_help(options: &VecDeque<CLIOptions>) -> bool {
-    check_smt(options, CLIOptions::Help)
-}
-
-pub fn check_smt(options: &VecDeque<CLIOptions>, obj: CLIOptions) -> bool {
-    options.iter().any(|val| matches!(val, a if a == &obj))
 }
 
 pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
@@ -109,17 +116,11 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<
 #[cfg(unix)]
 pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), std::io::Error> {
     use std::os::unix::fs::symlink;
-    return match symlink(origin, new_path) {
-        Ok(_) => Ok(()),
-        Err(data) => Err(data),
-    };
+    symlink(origin, new_path)
 }
 
 #[cfg(windows)]
 pub fn symlink_all(origin: &str, new_path: &str) -> Result<(), std::io::Error> {
     use std::os::windows::fs::symlink_dir;
-    return match symlink_dir(origin, new_path) {
-        Ok(_) => Ok(()),
-        Err(data) => Err(()),
-    };
+    symlink_dir(origin, new_path)
 }

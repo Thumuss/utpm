@@ -4,8 +4,6 @@ use std::fmt;
 pub enum GoodState {
     Good(String),
     None,
-    Help,
-    NothingToDo,
 }
 
 pub enum ErrorState {
@@ -48,4 +46,10 @@ impl From<std::io::Error> for ErrorState {
     fn from(err: std::io::Error) -> ErrorState {
         ErrorState::UnknowError(err.to_string())
     }
+}
+
+impl From<inquire::InquireError> for ErrorState {
+    fn from(err:  inquire::InquireError) -> ErrorState {
+        ErrorState::UnknowError(err.to_string())
+    }   
 }

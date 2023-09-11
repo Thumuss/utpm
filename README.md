@@ -2,8 +2,6 @@
 
 > Alias "utpm"
 
-Docs in WIP!
-
 # What is that?
 
 UTPM is a package manager for [local](https://github.com/typst/packages#local-packages) and remote (wip) packages.
@@ -54,14 +52,14 @@ There is a `build.sh` to install/update the project.
 
 - [x] Reimpl errors
 - [x] Last typst version
-- [ ] More commands:
-  - [ ] Unlink
+- [x] More commands:
+  - [x] Unlink
   - [x] List
 - [x] Create `typst.toml` by asking questions
 - [ ] ""pre-export"" package by giving them what they need
 - [x] use semver
-- [ ] Use custom packages namespace (e.g "@custom/example:1.0.1")
-- [ ] Fix typo
+- [x] Use custom packages namespace (e.g "@custom/example:1.0.1")
+- [x] Fix typo
 
 # Contribution
 
