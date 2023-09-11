@@ -181,5 +181,5 @@ pub fn run(force: bool, cli: bool, mut pkg: Package, mut extra: Extra) -> GoodRe
         }
     }
     TypstConfig::new(pkg, extra).write(&typ);
-    Ok(GoodState::Good("File created!".bold().to_string()))
+    Ok(GoodState::Good(format!("File created to {typ}").bold().to_string()))
 }

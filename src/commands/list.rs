@@ -29,5 +29,5 @@ pub fn run() -> GoodResult {
             }
         }
     }
-    Ok(GoodState::Good(String::from("")))
+    Ok(GoodState::None)
 }
