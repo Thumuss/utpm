@@ -3,7 +3,7 @@ pub mod commands;
 
 use clap::{Parser, Subcommand};
 use commands::{create, link, list, unlink};
-use utils::{Package, Extra};
+use utils::{Package, Extra, paths::d_packages};
 use utils::state::GoodState;
 
 #[derive(Parser)]
@@ -88,6 +88,8 @@ enum Commands {
     },
     /// List all of the package in the local folder
     List {},
+    /// Display path to typst packages folder
+    PackagesPath,
 
     Unlink {
         name: String,
@@ -115,6 +117,10 @@ fn main() {
         }
         Commands::List {  } => {
             list::run()
+        },
+        Commands::PackagesPath => { 
+            println!("Packages are located at: '{}'", d_packages());
+            Ok(utils::state::GoodState::None)
         },
         Commands::Unlink { name, version, namespace } => {
             unlink::run(name.clone(), version.clone(), namespace.clone())
