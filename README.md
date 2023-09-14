@@ -50,16 +50,7 @@ There is a `build.sh` to install/update the project.
 
 # TODO:
 
-- [x] Reimpl errors
-- [x] Last typst version
-- [x] More commands:
-  - [x] Unlink
-  - [x] List
-- [x] Create `typst.toml` by asking questions
-- [ ] ""pre-export"" package by giving them what they need
-- [x] use semver
-- [x] Use custom packages namespace (e.g "@custom/example:1.0.1")
-- [x] Fix typo
+See TODO.md
 
 # Contribution
 
