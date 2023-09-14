@@ -3,12 +3,10 @@ use std::{
     fs::{read, read_dir, symlink_metadata},
 };
 
-use dirs::data_dir;
-
 use super::state::{ErrorState, Result};
 
 pub fn get_data_dir() -> String {
-    match data_dir() {
+    match dirs::data_local_dir() {
         Some(dir) => match dir.to_str() {
             Some(string) => String::from(string),
             None => String::from("/.local/share"), //default on linux
