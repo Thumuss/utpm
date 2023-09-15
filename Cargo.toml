@@ -20,3 +20,12 @@ clap = { version = "4.4.2", features = ["derive"] }
 [[bin]]
 name = "utpm"
 path = "src/main.rs"
+
+# For future dependencies check and other things, it will be usefull
+# Reduce size
+[profile.portable]
+inherits = "release"
+strip = true
+opt-level = "s"
+lto = true
+codegen-units = 1
