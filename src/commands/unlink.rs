@@ -9,20 +9,31 @@ use crate::utils::{
 };
 
 pub fn run(
-    name: String,
+    name: &Option<String>,
     version: Option<Version>,
     namespace: Option<String>,
     yes: &bool,
+    dnamespace: &bool,
 ) -> GoodResult {
     let mut new_namespace = String::from("local");
     if let Some(nspace) = namespace {
         new_namespace = nspace;
     }
     if let Some(ver) = version {
+        if name.is_none() {
+            return Err(crate::utils::state::ErrorState::UnknowError(
+                "You need to provide at least a namespace or the name of the package".into(),
+            ));
+        }
         let ans = if !(*yes) {
             Confirm::new("Are you sure to delete this? This is irreversible.")
                 .with_help_message(
-                    format!("You want to erase {}/{}", name, ver.to_string()).as_str(),
+                    format!(
+                        "You want to erase {}/{}",
+                        name.clone().unwrap(),
+                        ver.to_string()
+                    )
+                    .as_str(),
                 )
                 .prompt()
         } else {
@@ -35,12 +46,21 @@ pub fn run(
         }
 
         fs::remove_dir_all(
-            d_packages() + format!("/{}/{}/{}", new_namespace, name, ver.to_string()).as_str(),
+            d_packages()
+                + format!(
+                    "/{}/{}/{}",
+                    new_namespace,
+                    name.clone().unwrap(),
+                    ver.to_string()
+                )
+                .as_str(),
         )?;
-    } else {
+    } else if *dnamespace {
         let ans = if !(*yes) {
             Confirm::new("Are you sure to delete this? This is irreversible.")
-                .with_help_message(format!("You want to erase {}", name).as_str())
+                .with_help_message(
+                    format!("You want to erase @{new_namespace}, the namespace").as_str(),
+                )
                 .prompt()
         } else {
             Ok(true)
@@ -51,7 +71,22 @@ pub fn run(
             return Ok(GoodState::Message("Nothing to do".to_string()));
         }
 
-        fs::remove_dir_all(d_packages() + format!("/{}/{}", new_namespace, name).as_str())?;
+        fs::remove_dir_all(d_packages() + format!("/{new_namespace}").as_str())?;
+    } else if let Some(nm) = name {
+        let ans = if !(*yes) {
+            Confirm::new("Are you sure to delete this? This is irreversible.")
+                .with_help_message(format!("You want to erase {}", nm).as_str())
+                .prompt()
+        } else {
+            Ok(true)
+        };
+
+        let bool = ans?;
+        if !bool {
+            return Ok(GoodState::Message("Nothing to do".to_string()));
+        }
+
+        fs::remove_dir_all(d_packages() + format!("/{}/{}", new_namespace, nm).as_str())?;
     }
     println!("{}", "Removed!".bold());
     Ok(GoodState::None)

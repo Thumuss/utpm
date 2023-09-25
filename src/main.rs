@@ -93,11 +93,15 @@ enum Commands {
     /// Delete package previously install with utpm
     Unlink {
         /// The name of the package
-        name: String,
+        name: Option<String>,
 
         /// Namespace, where your packages are install (default local)
         #[arg(short, long)]
         namespace: Option<String>,
+
+        /// Do you want to delete the namespace or not
+        #[arg(short, long)]
+        delete_namespace: bool,
 
         /// The version you want to delete, if nothing has been provided it will be the whole package
         #[arg(short, long)]
@@ -137,8 +141,8 @@ fn main() {
             println!("Packages are located at: '{}'", d_packages());
             Ok(utils::state::GoodState::None)
         },
-        Commands::Unlink { name, version, namespace, yes } => {
-            unlink::run(name.clone(), version.clone(), namespace.clone(), yes)
+        Commands::Unlink { name, version, namespace, yes, delete_namespace } => {
+            unlink::run(name, version.clone(), namespace.clone(), yes, delete_namespace)
         },
         Commands::Install { url, force }  => {
             install::run(force.clone(), url.as_ref())

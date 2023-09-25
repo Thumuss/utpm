@@ -69,7 +69,7 @@ impl Package {
 }
 
 /// A modify version of the `typst.toml` adding options to utpm
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Extra {
     /// Basic system of version (it will increased over time)
     pub version: Option<String>,
@@ -102,7 +102,6 @@ pub struct TypstConfig {
 
 impl TypstConfig {
     pub fn load(path: &String) -> Self {
-        println!("{}", path);
         toml::from_str(
             read_to_string(path)
                 .expect("Should have read the file")
