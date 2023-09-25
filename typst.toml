@@ -1,9 +1,0 @@
-[package]
-name = "abseedss"
-version = "1.0.0"
-entrypoint = "./main.typ"
-
-[utpm]
-version = "1"
-namespace = "test"
-dependencies = ["https://github.com/ThumusLive/testutpm"]
