@@ -36,7 +36,7 @@ enum Commands {
         version: semver::Version,
 
         /// Path to the main file of the project
-        #[arg(short, long, default_value_t=String::from("./main.typ"))]
+        #[arg(short, long, default_value_t=String::from("main.typ"))]
         entrypoint: String,
 
         /// Authors of the project

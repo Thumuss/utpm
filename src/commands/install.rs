@@ -5,6 +5,7 @@ use crate::utils::{
     state::{ErrorState, GoodResult, GoodState},
     TypstConfig,
 };
+use colored::Colorize;
 use git2::Repository;
 
 use super::link;
@@ -30,11 +31,14 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
     if !check_path_file(&typstfile) {
         return Err(ErrorState::UnknowError("Pas de typsttoml fdp".to_string()));
     }
+
+    let file = TypstConfig::load(&typstfile);
+
     if check_path_dir(&path) {
+        println!("{}", format!("~ {}:{}", file.package.name, file.package.version).bright_black());
         return Ok(GoodState::None);
     }
     
-    let file = TypstConfig::load(&typstfile);
     println!("Installing {}...", file.package.name);
     if let Some(fl) = file.utpm {
         if let Some(vec_depend) = fl.dependencies {
@@ -56,6 +60,7 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
     if !url.is_none() {
         fs::remove_dir_all(&path)?;
         link::run(force, false, Some(path.clone()))?;
+        println!("{}", format!("+ {}:{}", file.package.name, file.package.version).bright_green());
     }
     Ok(GoodState::None)
 }
