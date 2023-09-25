@@ -2,16 +2,15 @@ pub mod utils;
 pub mod commands;
 
 use clap::{Parser, Subcommand};
-use commands::{create, link, list, unlink};
+use commands::{create, link, list, unlink, install};
 use utils::{Package, Extra, paths::d_packages};
 use utils::state::GoodState;
 
 #[derive(Parser)]
-#[command(author = "Thumus", version = "0.1.0")]
-struct Cli {
-    #[arg(short, long, action = clap::ArgAction::Count)]
-    debug: u8,
+#[command(author = "Thumus", version = "1.1.0")]
 
+/// An unofficial typst package manager for your projects.
+struct Cli {
     #[command(subcommand)]
     command: Commands,
 }
@@ -91,15 +90,33 @@ enum Commands {
     /// Display path to typst packages folder
     PackagesPath,
 
+    /// Delete package previously install with utpm
     Unlink {
+        /// The name of the package
         name: String,
 
+        /// Namespace, where your packages are install (default local)
         #[arg(short, long)]
         namespace: Option<String>,
 
+        /// The version you want to delete, if nothing has been provided it will be the whole package
         #[arg(short, long)]
         version: Option<semver::Version>,
+
+        /// Confirm the deletion of a dir
+        #[arg(short, long)]
+        yes: bool,
     },
+
+    /// Install all dependencies from the `typst.toml`
+    Install {
+        /// If you want to install a specific package
+        url: Option<String>,
+
+        /// Passed force to all link commands
+        #[arg(short, long, default_value_t=false)]
+        force: bool,
+    }
 }
 fn main() {
     let x = Cli::parse();
@@ -107,13 +124,11 @@ fn main() {
         Commands::Create { cli, force, name, version, entrypoint, authors, license, description, repository, homepage, keywords, compiler, exclude , namespace} => {
             let pkg: Package = Package { name: name.clone().unwrap_or("".to_string()), version: version.clone(), entrypoint: entrypoint.clone(), authors: authors.clone(), license: license.clone(), description: description.clone(), repository: repository.clone(), homepage: homepage.clone(), keywords: keywords.clone(), compiler: compiler.clone(), exclude: exclude.clone() };
             let mut extra: Extra = Extra::new();
-            if let Some(namesp) = namespace {
-                extra.namespace = namesp.clone();
-            }
-            create::run(*force, *cli, pkg, extra)
+            extra.namespace = namespace.clone();
+            create::run(force, cli, pkg, extra)
         },
         Commands::Link { force, no_copy } => {
-            link::run(*force, *no_copy)
+            link::run(*force, *no_copy, None)
         }
         Commands::List {  } => {
             list::run()
@@ -122,15 +137,18 @@ fn main() {
             println!("Packages are located at: '{}'", d_packages());
             Ok(utils::state::GoodState::None)
         },
-        Commands::Unlink { name, version, namespace } => {
-            unlink::run(name.clone(), version.clone(), namespace.clone())
+        Commands::Unlink { name, version, namespace, yes } => {
+            unlink::run(name.clone(), version.clone(), namespace.clone(), yes)
+        },
+        Commands::Install { url, force }  => {
+            install::run(force.clone(), url.as_ref())
         }
     };
 
     match res {
         Ok(val) => match val {
             GoodState::None => (),
-            GoodState::Good(string) => println!("{}", string) 
+            GoodState::Message(string) => println!("{}", string) 
         },
 
         Err(val) => println!("{}", val.to_string())

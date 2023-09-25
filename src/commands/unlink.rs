@@ -8,36 +8,47 @@ use crate::utils::{
     state::{GoodResult, GoodState},
 };
 
-pub fn run(name: String, version: Option<Version>, namespace: Option<String>) -> GoodResult {
+pub fn run(
+    name: String,
+    version: Option<Version>,
+    namespace: Option<String>,
+    yes: &bool,
+) -> GoodResult {
     let mut new_namespace = String::from("local");
     if let Some(nspace) = namespace {
         new_namespace = nspace;
     }
     if let Some(ver) = version {
-        let ans: Result<bool, inquire::InquireError> =
+        let ans = if !(*yes) {
             Confirm::new("Are you sure to delete this? This is irreversible.")
                 .with_help_message(
                     format!("You want to erase {}/{}", name, ver.to_string()).as_str(),
                 )
-                .prompt();
+                .prompt()
+        } else {
+            Ok(true)
+        };
 
         let bool = ans?;
         if !bool {
-            return Ok(GoodState::Good("Nothing to do".to_string()));
+            return Ok(GoodState::Message("Nothing to do".to_string()));
         }
 
         fs::remove_dir_all(
             d_packages() + format!("/{}/{}/{}", new_namespace, name, ver.to_string()).as_str(),
         )?;
     } else {
-        let ans: Result<bool, inquire::InquireError> =
+        let ans = if !(*yes) {
             Confirm::new("Are you sure to delete this? This is irreversible.")
                 .with_help_message(format!("You want to erase {}", name).as_str())
-                .prompt();
+                .prompt()
+        } else {
+            Ok(true)
+        };
 
         let bool = ans?;
         if !bool {
-            return Ok(GoodState::Good("Nothing to do".to_string()));
+            return Ok(GoodState::Message("Nothing to do".to_string()));
         }
 
         fs::remove_dir_all(d_packages() + format!("/{}/{}", new_namespace, name).as_str())?;

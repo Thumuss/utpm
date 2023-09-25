@@ -14,23 +14,37 @@ pub mod state;
 
 #[skip_serializing_none]
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
+/// Represent a package from the official `typst.toml`
 pub struct Package {
     // Required
-    pub name: String,
 
+    /// The name of the package
+    pub name: String,
+    /// The version (using semver)
     pub version: Version,
+    /// Where is your main file
     pub entrypoint: String,
 
     // Not required with local packages
+
+    /// The authors of the package
     pub authors: Option<Vec<String>>,
+    /// The license
     pub license: Option<String>,
+    /// A little description for your users
     pub description: Option<String>,
 
     // Not required
+
+    /// A link to your repository
     pub repository: Option<String>,
+    /// The link to your website
     pub homepage: Option<String>,
+    /// A list of keywords to research your package
     pub keywords: Option<Vec<String>>,
+    /// A minimum version of the compiler (for typst)
     pub compiler: Option<Version>,
+    /// A list of excludes files
     pub exclude: Option<Vec<String>>,
 }
 
@@ -39,7 +53,7 @@ impl Package {
         Self {
             name: "".to_string(),
             version: Version::new(1, 0, 0),
-            entrypoint: "./main.typ".to_string(),
+            entrypoint: "main.typ".to_string(),
 
             authors: None,
             license: None,
@@ -54,25 +68,36 @@ impl Package {
     }
 }
 
+/// A modify version of the `typst.toml` adding options to utpm
 #[derive(Serialize, Deserialize)]
 pub struct Extra {
-    pub version: String,
-    pub namespace: String
+    /// Basic system of version (it will increased over time)
+    pub version: Option<String>,
+    /// The name of where you store your packages (default: local)
+    pub namespace: Option<String>,
+
+    /// List of url's for your dependencies (will be resolved with install command)
+    pub dependencies: Option<Vec<String>>
 }
 
 impl Extra {
     pub fn new() -> Self {
         Self {
-            version: "1".to_string(),
-            namespace: "local".to_string()
+            version: Some("1".to_string()),
+            namespace: Some("local".to_string()),
+            dependencies: None
         }
     }
 }
 
+/// The file `typst.toml` itself
 #[derive(Serialize, Deserialize)]
 pub struct TypstConfig {
+    /// Base of typst package system
     pub package: Package,
-    pub utpm: Extra,
+    /// An extra for utpm
+    pub utpm: Option<Extra>,
+
 }
 
 impl TypstConfig {
@@ -94,7 +119,7 @@ impl TypstConfig {
     pub fn new(package: Package, extra: Extra) -> Self {
         Self {
             package,
-            utpm: extra
+            utpm: Some(extra),
         }
     }
 }
@@ -104,7 +129,7 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<
     for entry in fs::read_dir(src)? {
         let entry = entry?;
         let ty = entry.file_type()?;
-        if ty.is_dir() {
+        if ty.is_dir() && entry.file_name() != "utpmp" && entry.file_name() != "install" {
             copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
         } else {
             fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;

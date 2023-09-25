@@ -1,8 +1,7 @@
 if [ -d "utpm" ]; then
-    cd utpm && 
+    cd utpm 
     git pull origin main && 
-    cargo install --path .
+    cargo install --path . --bin utpm
 else
-    git clone https://github.com/ThumusLive/utpm.git
-    cd utpm && cargo install --path .
+    cargo install --git https://github.com/ThumusLive/utpm.git --bin utpm
 fi

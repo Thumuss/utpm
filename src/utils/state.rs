@@ -1,8 +1,7 @@
 use colored::Colorize;
-use std::fmt;
-
+use std::{fmt, io::Error as IError};
 pub enum GoodState {
-    Good(String),
+    Message(String),
     None,
 }
 
@@ -11,6 +10,11 @@ pub enum ErrorState {
 
     CurrentDirectoryError(String),
     CreationDirectoryError(String),
+
+    UnexpectedIOError(String),
+    UnexpectedQuestionsError(String),
+    UnexpectedGitError(String),
+
 
     UnexpectedTokenError(String),
     NoneTokenError(String),
@@ -38,18 +42,33 @@ impl fmt::Display for ErrorState {
             ErrorState::NoneTokenError(string) => {
                 write!(f, "{}: {string}", "None Token Error".red().bold(),)
             }
+            ErrorState::UnexpectedIOError(string) => {
+                write!(f, "{}: {string}", "Unexpected IO Error".red().bold(),)
+            }
+            ErrorState::UnexpectedQuestionsError(string) => {
+                write!(f, "{}: {string}", "Unexpected Questions Error".red().bold(),)
+            }
+            ErrorState::UnexpectedGitError(string) => {
+                write!(f, "{}: {string}", "Unexpected Git Error".red().bold(),)
+            }
         }
     }
 }
 
-impl From<std::io::Error> for ErrorState {
-    fn from(err: std::io::Error) -> ErrorState {
-        ErrorState::UnknowError(err.to_string())
+impl From<IError> for ErrorState {
+    fn from(err: IError) -> ErrorState {
+        ErrorState::UnexpectedIOError(err.to_string())
     }
 }
 
 impl From<inquire::InquireError> for ErrorState {
-    fn from(err:  inquire::InquireError) -> ErrorState {
-        ErrorState::UnknowError(err.to_string())
-    }   
+    fn from(err: inquire::InquireError) -> ErrorState {
+        ErrorState::UnexpectedQuestionsError(err.to_string())
+    }
+}
+
+impl From<git2::Error> for ErrorState {
+    fn from(err: git2::Error) -> ErrorState {
+        ErrorState::UnexpectedGitError(err.to_string())
+    }
 }

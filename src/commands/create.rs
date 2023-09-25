@@ -11,13 +11,13 @@ use crate::utils::{
 
 static TYPES: [&str; 4] = ["Local", "Public", "More options", "Namespace"];
 
-pub fn run(force: bool, cli: bool, mut pkg: Package, mut extra: Extra) -> GoodResult {
+pub fn run(force: &bool, cli: &bool, mut pkg: Package, mut extra: Extra) -> GoodResult {
     let typ = get_current_dir()? + "/typst.toml";
     if check_path_file(&typ) && !force {
         return Ok(GoodState::None);
     }
 
-    if force {
+    if *force {
         println!(
             "{} {}",
             "WARNING:".bold().yellow(),
@@ -26,7 +26,7 @@ pub fn run(force: bool, cli: bool, mut pkg: Package, mut extra: Extra) -> GoodRe
     }
 
     if !cli {
-        let x = MultiSelect::new(
+        let choose_options = MultiSelect::new(
             "Choose between local and public package and options: ",
             TYPES.to_vec(),
         )
@@ -44,9 +44,9 @@ pub fn run(force: bool, cli: bool, mut pkg: Package, mut extra: Extra) -> GoodRe
         .prompt()
         .unwrap();
 
-        let public = x.contains(&TYPES[1]);
-        let more = x.contains(&TYPES[2]);
-        let extra_opts = x.contains(&TYPES[3]);
+        let public = choose_options.contains(&TYPES[1]);
+        let more = choose_options.contains(&TYPES[2]);
+        let extra_opts = choose_options.contains(&TYPES[3]);
 
         pkg.name = Text::new("Name: ")
             .with_validator(required!("This field is required"))
@@ -172,14 +172,14 @@ pub fn run(force: bool, cli: bool, mut pkg: Package, mut extra: Extra) -> GoodRe
         }
 
         if extra_opts {
-            extra.namespace = Text::new("Namespace: ")
+            extra.namespace = Some(Text::new("Namespace: ")
                 .with_help_message("e.g. backup/mypassword.txt,.env")
                 .with_default("local")
                 .prompt()
                 .unwrap()
-                .to_string()
+                .to_string())
         }
     }
     TypstConfig::new(pkg, extra).write(&typ);
-    Ok(GoodState::Good(format!("File created to {typ}").bold().to_string()))
+    Ok(GoodState::Message(format!("File created to {typ}").bold().to_string()))
 }

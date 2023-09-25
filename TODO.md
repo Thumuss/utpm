@@ -23,13 +23,18 @@
     - [ ] commands/link.rs
     - [ ] commands/list.rs
     - [ ] commands/unlink.rs
-    - [ ] commands/install.rs (wip)
+    - [ ] commands/install.rs
 - [ ] Download packages from unofficial repos, see #3
-  - [ ] git2-rs
-  - [ ] Pre-fetch to see `typst.toml`
-  - [ ] Dependencies managed
-  - [ ] use utpm namespace to use libs (or portable so without any links)
-  - [ ] Maybe a launchable version from utpm to link packages?
-- [ ] Portable version and only installable version
-  - [ ] Integrate install
-  - [ ] And all of todos from above with #3
+  - [x] git2-rs -> Not the best use of it
+  - [x] Dependencies managed
+  - [x] use utpm namespace to use libs (or portable so without any links) → It wouldn't be as good as it sounds, typst can't use package outside the data folder
+  - [x] Maybe a launchable version from utpm to link packages?
+- [x] Portable version and only installable version
+  - [x] Integrate install
+  - [x] And all of todos from above with #3
+- [ ] New commands for install:
+  - [ ] Info.rs
+  - [ ] Update, (using semver)
+  - [ ] Bulk delete ()
+  - [ ] Clean?
+- [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used

@@ -5,6 +5,7 @@ use std::{
 
 use super::state::{ErrorState, Result};
 
+#[cfg(not(feature = "portable"))]
 pub fn get_data_dir() -> String {
     match dirs::data_local_dir() {
         Some(dir) => match dir.to_str() {
@@ -15,8 +16,21 @@ pub fn get_data_dir() -> String {
     }
 }
 
+#[cfg(feature = "portable")]
+pub fn get_data_dir() -> String {
+    get_current_dir().unwrap_or("./".to_string()) + "/utpmp"
+}
+
 pub fn d_packages() -> String {
     get_data_dir() + "/typst/packages"
+}
+
+pub fn datalocalutpm() -> String {
+    get_data_dir() + "/utpm"
+}
+
+pub fn d_utpm() -> String {
+    d_packages() + "/utpm"
 }
 
 pub fn get_current_dir() -> Result<String> {

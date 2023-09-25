@@ -10,22 +10,34 @@ dirs = "5.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_with = "1.0"
-colored = "2.0"
+colored = { version = "2.0"}
 toml = { version = "0.7.5", features = ["display"] }
 inquire = "0.6.2"
 semver = { version = "1.0.18", features = ["serde"] }
 spdx = "0.10.2"
 clap = { version = "4.4.2", features = ["derive"] }
+git2 = "0.18.0"
 
 [[bin]]
 name = "utpm"
 path = "src/main.rs"
+
+
+
+[[bin]]
+name = "utpm-portable"
+path = "src/portable.rs"
+
+[features]
+portable = []
+
 
 # For future dependencies check and other things, it will be usefull
 # Reduce size
 [profile.portable]
 inherits = "release"
 strip = true
-opt-level = "s"
+opt-level = "z"
 lto = true
 codegen-units = 1
+panic = "abort"
