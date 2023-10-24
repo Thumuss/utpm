@@ -1,6 +1,6 @@
 [package]
 name = "utpm"
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -22,15 +22,12 @@ git2 = "0.18.0"
 name = "utpm"
 path = "src/main.rs"
 
-
-
 [[bin]]
 name = "utpm-portable"
 path = "src/portable.rs"
 
 [features]
 portable = []
-
 
 # For future dependencies check and other things, it will be usefull
 # Reduce size

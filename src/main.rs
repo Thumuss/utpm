@@ -132,6 +132,7 @@ enum Commands {
         force: bool,
     },
 }
+
 fn main() {
     let x = Cli::parse();
     let res = match &x.command {
@@ -169,7 +170,7 @@ fn main() {
             create::run(force, cli, pkg, extra)
         }
         Commands::Link { force, no_copy } => link::run(*force, *no_copy, None),
-        Commands::List {} => list::run(),
+        Commands::List { } => list::run(),
         Commands::PackagesPath => {
             println!("Packages are located at: '{}'", d_packages());
             Ok(utils::state::GoodState::None)

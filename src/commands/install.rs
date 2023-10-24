@@ -1,4 +1,4 @@
-use std::fs;
+use std::{env, fs, path::Path};
 
 use crate::utils::{
     paths::{check_path_dir, check_path_file, d_packages, datalocalutpm, get_current_dir},
@@ -6,7 +6,7 @@ use crate::utils::{
     TypstConfig,
 };
 use colored::Colorize;
-use git2::Repository;
+use git2::{Cred, RemoteCallbacks, Repository, FetchOptions, build::RepoBuilder};
 
 use super::link;
 
@@ -27,6 +27,27 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
 
     if let Some(x) = url {
         fs::create_dir_all(&path)?;
+        /*if x.starts_with("git") || x.starts_with("http") {
+            let mut callbacks = RemoteCallbacks::new();
+            callbacks.credentials(|_, username_from_url, _| {
+                Cred::ssh_key(
+                    username_from_url.unwrap(),
+                    None,
+                    Path::new(&format!("{}/.ssh/id_rsa", env::var("HOME").unwrap())),
+                    Some(env::var("UTPM_PASSPHRASE").unwrap_or(String::new()).as_str()),
+                )
+            });
+    
+            let mut fo = FetchOptions::new();
+            fo.remote_callbacks(callbacks);
+    
+            let mut builder = RepoBuilder::new();
+            builder.fetch_options(fo);
+    
+            builder.clone(&x, Path::new(&path))?;
+        } else {
+            Repository::clone(&x, &path)?;
+        }*/
         Repository::clone(&x, &path)?;
     };
 
@@ -43,6 +64,7 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
             version: None,
             namespace: Some("local".to_string()),
             dependencies: None,
+            types: Some(crate::utils::ProjectType::Package),
         })
         .namespace
         .unwrap_or("local".into());
@@ -60,7 +82,6 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
         );
         return Ok(GoodState::None);
     }
-
 
     println!("{}", format!("Installing {}...", file.package.name).bold());
     if let Some(fl) = utpm {
@@ -88,8 +109,12 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
             format!("+ {}:{}", file.package.name, file.package.version).bright_green()
         );
     } else {
-        println!("{}", "* Installation complete! If you want to use it as a lib, just do a `utpm link`!".bright_green())
+        println!(
+            "{}",
+            "* Installation complete! If you want to use it as a lib, just do a `utpm link`!"
+                .bright_green()
+        )
     }
-    
+
     Ok(GoodState::None)
 }

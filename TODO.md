@@ -24,7 +24,7 @@
     - [ ] commands/list.rs
     - [ ] commands/unlink.rs
     - [ ] commands/install.rs
-- [ ] Download packages from unofficial repos, see #3
+- [x] Download packages from unofficial repos, see #3
   - [x] git2-rs -> Not the best use of it
   - [x] Dependencies managed
   - [x] use utpm namespace to use libs (or portable so without any links) → It wouldn't be as good as it sounds, typst can't use package outside the data folder
@@ -35,6 +35,8 @@
 - [ ] New commands for install:
   - [ ] Info.rs
   - [ ] Update, (using semver)
-  - [ ] Bulk delete ()
+  - [x] Bulk delete
   - [ ] Clean?
 - [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used
+- [ ] Templates (first impl)
+- [ ] JSON only mode 
