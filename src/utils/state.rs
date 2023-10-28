@@ -10,11 +10,12 @@ pub enum ErrorState {
 
     CurrentDirectoryError(String),
     CreationDirectoryError(String),
+    HomeDirectoryError(String),
 
     UnexpectedIOError(String),
     UnexpectedQuestionsError(String),
     UnexpectedGitError(String),
-
+    UnexpectedSemVerError(String),
 
     UnexpectedTokenError(String),
     NoneTokenError(String),
@@ -29,6 +30,10 @@ impl fmt::Display for ErrorState {
             ErrorState::UnknowError(string) => write!(f, "{}: {string}", "Error".red().bold()),
             ErrorState::CurrentDirectoryError(string) => {
                 write!(f, "{}: {string}", "Current Directory Error".red().bold(),)
+            }
+
+            ErrorState::HomeDirectoryError(string) => {
+                write!(f, "{}: {string}", "Home Directory Error".red().bold(),)
             }
 
             ErrorState::CreationDirectoryError(string) => {
@@ -51,6 +56,9 @@ impl fmt::Display for ErrorState {
             ErrorState::UnexpectedGitError(string) => {
                 write!(f, "{}: {string}", "Unexpected Git Error".red().bold(),)
             }
+            ErrorState::UnexpectedSemVerError(string) => {
+                write!(f, "{}: {string}", "Unexpected SemVer Error".red().bold(),)
+            }
         }
     }
 }
@@ -70,5 +78,11 @@ impl From<inquire::InquireError> for ErrorState {
 impl From<git2::Error> for ErrorState {
     fn from(err: git2::Error) -> ErrorState {
         ErrorState::UnexpectedGitError(err.to_string())
+    }
+}
+
+impl From<semver::Error> for ErrorState {
+    fn from(err: semver::Error) -> ErrorState {
+        ErrorState::UnexpectedSemVerError(err.to_string())
     }
 }

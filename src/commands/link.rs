@@ -3,16 +3,20 @@ use std::fs;
 
 use crate::utils::{
     copy_dir_all,
-    paths::{check_path_dir, get_current_dir, d_packages},
+    paths::{check_path_dir, d_packages, get_current_dir},
     state::{ErrorState, GoodResult, GoodState},
-    symlink_all, TypstConfig, Extra,
+    symlink_all, Extra, TypstConfig,
 };
 
 pub fn run(force: bool, no_copy: bool, path: Option<String>) -> GoodResult {
     let curr = path.unwrap_or(get_current_dir()?);
 
     let config = TypstConfig::load(&(curr.clone() + "/typst.toml"));
-    let namespace = config.utpm.unwrap_or(Extra::new()).namespace.unwrap_or("local".to_string());
+    let namespace = config
+        .utpm
+        .unwrap_or(Extra::new())
+        .namespace
+        .unwrap_or("local".to_string());
 
     let name = config.package.name;
     let version = config.package.version;
@@ -28,12 +32,11 @@ pub fn run(force: bool, no_copy: bool, path: Option<String>) -> GoodResult {
         fs::remove_dir_all(&path)?
     }
 
-
     if no_copy {
         symlink_all(&curr, &path)?;
         Ok(GoodState::Message(format!(
             "Project link to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
-            path, namespace , name, version
+            path, namespace, name, version
         )))
     } else {
         copy_dir_all(&curr, &path)?;

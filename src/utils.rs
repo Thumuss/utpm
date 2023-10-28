@@ -13,12 +13,11 @@ pub mod paths;
 pub mod state;
 
 #[skip_serializing_none]
-#[derive(Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 /// Represent a package from the official `typst.toml`
 /// See https://github.com/typst/packages
 pub struct Package {
     // Required
-
     /// The name of the package
     pub name: String,
     /// The version (using semver)
@@ -27,7 +26,6 @@ pub struct Package {
     pub entrypoint: String,
 
     // Not required with local packages
-
     /// The authors of the package
     pub authors: Option<Vec<String>>,
     /// The license
@@ -36,7 +34,6 @@ pub struct Package {
     pub description: Option<String>,
 
     // Not required
-
     /// A link to your repository
     pub repository: Option<String>,
     /// The link to your website
@@ -72,7 +69,7 @@ impl Package {
 #[derive(Serialize, Deserialize, Clone)]
 pub enum ProjectType {
     Template,
-    Package
+    Package,
 }
 
 /// A modify version of the `typst.toml` adding options to utpm
@@ -87,7 +84,7 @@ pub struct Extra {
     pub dependencies: Option<Vec<String>>,
 
     /// A quick implementation of a type system of projects
-    pub types: Option<ProjectType>
+    pub types: Option<ProjectType>,
 }
 
 impl Extra {
@@ -96,7 +93,7 @@ impl Extra {
             version: Some("2".to_string()),
             namespace: Some("local".to_string()),
             dependencies: None,
-            types: Some(ProjectType::Package)
+            types: Some(ProjectType::Package),
         }
     }
 }
@@ -108,7 +105,6 @@ pub struct TypstConfig {
     pub package: Package,
     /// An extra for utpm
     pub utpm: Option<Extra>,
-
 }
 
 impl TypstConfig {

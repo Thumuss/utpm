@@ -1,12 +1,14 @@
 use std::{env, fs, path::Path};
 
 use crate::utils::{
-    paths::{check_path_dir, check_path_file, d_packages, datalocalutpm, get_current_dir},
+    paths::{
+        check_path_dir, check_path_file, d_packages, datalocalutpm, get_current_dir, get_ssh_dir,
+    },
     state::{ErrorState, GoodResult, GoodState},
     TypstConfig,
 };
 use colored::Colorize;
-use git2::{Cred, RemoteCallbacks, Repository, FetchOptions, build::RepoBuilder};
+use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository};
 
 use super::link;
 
@@ -27,28 +29,37 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
 
     if let Some(x) = url {
         fs::create_dir_all(&path)?;
-        /*if x.starts_with("git") || x.starts_with("http") {
+        let sshpath = get_ssh_dir()?;
+        let ed = sshpath.clone() + "/id_ed25519";
+        let rsa = sshpath + "/id_rsa";
+        let val = if check_path_file(&ed) { ed } else { rsa };
+        if x.starts_with("git") {
             let mut callbacks = RemoteCallbacks::new();
             callbacks.credentials(|_, username_from_url, _| {
-                Cred::ssh_key(
-                    username_from_url.unwrap(),
-                    None,
-                    Path::new(&format!("{}/.ssh/id_rsa", env::var("HOME").unwrap())),
-                    Some(env::var("UTPM_PASSPHRASE").unwrap_or(String::new()).as_str()),
-                )
+                match Cred::ssh_key_from_agent(username_from_url.unwrap_or("git")) {
+                    Ok(cred) => Ok(cred),
+                    Err(_) => Cred::ssh_key(
+                        username_from_url.unwrap_or("git"),
+                        None,
+                        Path::new(&val),
+                        Some(
+                            env::var("UTPM_PASSPHRASE")
+                                .unwrap_or(String::new())
+                                .as_str(),
+                        ),
+                    ),
+                }
             });
-    
+
             let mut fo = FetchOptions::new();
             fo.remote_callbacks(callbacks);
-    
+
             let mut builder = RepoBuilder::new();
             builder.fetch_options(fo);
-    
             builder.clone(&x, Path::new(&path))?;
         } else {
             Repository::clone(&x, &path)?;
-        }*/
-        Repository::clone(&x, &path)?;
+        }
     };
 
     let typstfile = path.clone() + "/typst.toml";

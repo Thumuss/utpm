@@ -7,7 +7,7 @@ use utils::state::GoodState;
 use utils::{paths::d_packages, Extra, Package};
 
 #[derive(Parser)]
-#[command(author = "Thumus", version = "1.1.0")]
+#[command(author = "Thumus", version = "2.0.0")]
 
 /// An unofficial typst package manager for your projects.
 struct Cli {
@@ -56,7 +56,7 @@ enum Commands {
         repository: Option<String>,
 
         /// Link to your homepage
-        #[arg(short, long)]
+        #[arg(short = 'H', long)]
         homepage: Option<String>,
 
         /// Keywords to find your project
@@ -74,6 +74,10 @@ enum Commands {
         /// Excludes files
         #[arg(short = 'N', long)]
         namespace: Option<String>,
+
+        /// Populate
+        #[arg(short = 'p', long)]
+        populate: bool,
     },
     /// Link your project to your dirs
     Link {
@@ -86,7 +90,7 @@ enum Commands {
         no_copy: bool,
     },
     /// List all of the package in the local folder
-    List {},
+    List,
     /// Display path to typst packages folder
     PackagesPath,
 
@@ -151,6 +155,7 @@ fn main() {
             compiler,
             exclude,
             namespace,
+            populate,
         } => {
             let pkg: Package = Package {
                 name: name.clone().unwrap_or("".to_string()),
@@ -167,10 +172,10 @@ fn main() {
             };
             let mut extra: Extra = Extra::new();
             extra.namespace = namespace.clone();
-            create::run(force, cli, pkg, extra)
+            create::run(force, cli, pkg, extra, populate)
         }
         Commands::Link { force, no_copy } => link::run(*force, *no_copy, None),
-        Commands::List { } => list::run(),
+        Commands::List => list::run(),
         Commands::PackagesPath => {
             println!("Packages are located at: '{}'", d_packages());
             Ok(utils::state::GoodState::None)

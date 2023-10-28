@@ -14,7 +14,7 @@
 
 ## V3:
 
-- [ ] ""pre-export"" package by giving them what they need 
+- [X] ""pre-export"" package by giving them what they need 
 - [ ] Documentation for developpers
   - [ ] utils.rs
   - [ ] main.rs
@@ -25,7 +25,7 @@
     - [ ] commands/unlink.rs
     - [ ] commands/install.rs
 - [x] Download packages from unofficial repos, see #3
-  - [x] git2-rs -> Not the best use of it
+  - [x] git2-rs
   - [x] Dependencies managed
   - [x] use utpm namespace to use libs (or portable so without any links) → It wouldn't be as good as it sounds, typst can't use package outside the data folder
   - [x] Maybe a launchable version from utpm to link packages?
@@ -37,6 +37,6 @@
   - [ ] Update, (using semver)
   - [x] Bulk delete
   - [ ] Clean?
-- [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used
-- [ ] Templates (first impl)
+- [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used -> Not for now
+- [ ] Templates (first impl) -> Not now → V3
 - [ ] JSON only mode 

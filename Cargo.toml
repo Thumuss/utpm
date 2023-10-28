@@ -14,7 +14,7 @@ colored = { version = "2.0"}
 toml = { version = "0.7.5", features = ["display"] }
 inquire = "0.6.2"
 semver = { version = "1.0.18", features = ["serde"] }
-spdx = "0.10.2"
+spdx = { version = "0.10.2", features = ["text"] }
 clap = { version = "4.4.2", features = ["derive"] }
 git2 = "0.18.0"
 
@@ -31,8 +31,7 @@ portable = []
 
 # For future dependencies check and other things, it will be usefull
 # Reduce size
-[profile.portable]
-inherits = "release"
+[profile.release]
 strip = true
 opt-level = "z"
 lto = true

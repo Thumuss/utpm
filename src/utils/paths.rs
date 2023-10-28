@@ -16,6 +16,24 @@ pub fn get_data_dir() -> String {
     }
 }
 
+pub fn get_home_dir() -> Result<String> {
+    match dirs::home_dir() {
+        Some(val) => match val.to_str() {
+            Some(v) => Ok(String::from(v)),
+            None => Err(ErrorState::HomeDirectoryError(String::from(
+                "there is no home directory",
+            ))),
+        },
+        None => Err(ErrorState::HomeDirectoryError(String::from(
+            "there is no home directory",
+        ))),
+    }
+}
+
+pub fn get_ssh_dir() -> Result<String> {
+    Ok(get_home_dir()? + "/.ssh")
+}
+
 #[cfg(feature = "portable")]
 pub fn get_data_dir() -> String {
     get_current_dir().unwrap_or("./".to_string()) + "/utpmp"
