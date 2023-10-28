@@ -12,7 +12,7 @@
 - [x] Use custom packages namespace (e.g "@custom/example:1.0.1")
 - [x] Fix typo
 
-## V3:
+## V2.1:
 
 - [X] ""pre-export"" package by giving them what they need 
 - [ ] Documentation for developpers

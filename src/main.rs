@@ -7,7 +7,7 @@ use utils::state::GoodState;
 use utils::{paths::d_packages, Extra, Package};
 
 #[derive(Parser)]
-#[command(author = "Thumus", version = "2.0.0")]
+#[command(author = "Thumus", version = "2.1.0")]
 
 /// An unofficial typst package manager for your projects.
 struct Cli {
