@@ -40,3 +40,25 @@
 - [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used -> Not for now
 - [ ] Templates (first impl) -> Not now → V3
 - [ ] JSON only mode 
+
+## V3
+
+This update will introduce documentations, JSON and some commands. (need more infos)
+
+- [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used
+- [ ] Templates, Package, Plugin
+- [ ] JSON only mode 
+- [ ] Documentation for developpers and users
+  - [ ] utils.rs
+  - [ ] main.rs
+  - [ ] commands.rs → remake it?
+    - [ ] commands/create.rs
+    - [ ] commands/link.rs
+    - [ ] commands/list.rs
+    - [ ] commands/unlink.rs
+    - [ ] commands/install.rs
+- [ ] New commands for install:
+  - [ ] Info.rs
+  - [ ] Update, (using semver) → \w listing dependencies
+  - [ ] Clean?
+
