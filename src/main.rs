@@ -3,6 +3,7 @@ pub mod utils;
 
 use clap::{Parser, Subcommand};
 use commands::{create, install, link, list, unlink};
+use serde_json::json;
 use utils::{paths::d_packages, Extra, Package};
 
 #[derive(Parser)]
@@ -12,6 +13,10 @@ use utils::{paths::d_packages, Extra, Package};
 struct Cli {
     #[command(subcommand)]
     command: Commands,
+
+    /// Output everything into a json format. Available on every commands.
+    #[arg(short = 'j', long)]
+    json: bool,
 }
 
 #[derive(Subcommand, Debug)]
@@ -138,6 +143,7 @@ enum Commands {
 
 fn main() {
     let x = Cli::parse();
+    let json = x.json;
     let res = match &x.command {
         Commands::Create {
             cli,
@@ -220,6 +226,12 @@ fn main() {
 
     match res {
         Ok(_) => (),
-        Err(val) => println!("{}", val.to_string()),
+        Err(val) => {
+            if json {
+                println!("{}", val.json())
+            } else {
+                println!("{}", val.to_string())
+            }
+        }
     }
 }

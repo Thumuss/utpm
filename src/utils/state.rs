@@ -1,5 +1,6 @@
 use colored::{ColoredString, Colorize};
 use semver::Version;
+use serde_json::{json, Value};
 use std::{fmt, io::Error as IError};
 
 #[derive(Debug)]
@@ -28,6 +29,9 @@ impl ErrorKind {
             ErrorKind::HomeDir => "There is no home directory set.".into(),
             ErrorKind::Namespace => {
                 "You need to provide at least a namespace or the name of the package".into()
+            }
+            ErrorKind::ConfigFile => {
+                "There is no typst.toml in this directory. Try to `utpm create -p` to create a package.".into()
             }
             ErrorKind::AlreadyExist(name, version, info) => format!("This package ({name}:{version}) already exist!\n{info} Put --force to force the copy or change the version in 'typst.toml'"),
             ErrorKind::UnknowError(s) => s.into(),
@@ -61,6 +65,13 @@ impl Error {
             kind,
             message: None,
         }
+    }
+    pub fn json(&self) -> Value {
+        let message = self.message.clone().unwrap_or(self.kind.message());
+        json!({
+            "type": self.kind.to_string(),
+            "message": message,
+        })
     }
     pub fn to_string(&self) -> String {
         let kind_message = format!("{} Error", self.kind.to_string());
