@@ -43,7 +43,7 @@
 
 ## V3
 
-This update will introduce documentations, JSON and some commands. (need more infos)
+This update will introduce documentations, a better handling error system, JSON and some commands. 
 
 - [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used
 - [ ] Templates, Package, Plugin
