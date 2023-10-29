@@ -3,7 +3,6 @@ pub mod utils;
 
 use clap::{Parser, Subcommand};
 use commands::{create, install, link, list, unlink};
-use utils::state::GoodState;
 use utils::{paths::d_packages, Extra, Package};
 
 #[derive(Parser)]
@@ -63,7 +62,7 @@ enum Commands {
         #[arg(short, long)]
         keywords: Option<Vec<String>>,
 
-        /// CMinimum compiler version
+        /// Minimum compiler version
         #[arg(short, long)]
         compiler: Option<semver::Version>,
 
@@ -71,7 +70,7 @@ enum Commands {
         #[arg(short = 'x', long)]
         exclude: Option<Vec<String>>,
 
-        /// Excludes files
+        /// Namespace
         #[arg(short = 'N', long)]
         namespace: Option<String>,
 
@@ -178,7 +177,7 @@ fn main() {
         Commands::List => list::run(),
         Commands::PackagesPath => {
             println!("Packages are located at: '{}'", d_packages());
-            Ok(utils::state::GoodState::None)
+            Ok(true)
         }
         Commands::Unlink {
             name,
@@ -214,17 +213,13 @@ fn main() {
                     }
                 };
             }
-            Ok(GoodState::None)
+            Ok(true)
         }
         Commands::Install { url, force } => install::run(force.clone(), url.as_ref()),
     };
 
     match res {
-        Ok(val) => match val {
-            GoodState::None => (),
-            GoodState::Message(string) => println!("{}", string),
-        },
-
+        Ok(_) => (),
         Err(val) => println!("{}", val.to_string()),
     }
 }

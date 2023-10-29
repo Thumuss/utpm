@@ -4,7 +4,7 @@ use crate::utils::{
     paths::{
         check_path_dir, check_path_file, d_packages, datalocalutpm, get_current_dir, get_ssh_dir,
     },
-    state::{ErrorState, GoodResult, GoodState},
+    state::{Error, ErrorKind, Result},
     TypstConfig,
 };
 use colored::Colorize;
@@ -12,7 +12,7 @@ use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository};
 
 use super::link;
 
-pub fn run(force: bool, url: Option<&String>) -> GoodResult {
+pub fn run(force: bool, url: Option<&String>) -> Result<bool> {
     let path = format!("{}/tmp", datalocalutpm());
     if check_path_dir(&path) {
         fs::remove_dir_all(path)?;
@@ -20,7 +20,7 @@ pub fn run(force: bool, url: Option<&String>) -> GoodResult {
     init(force, url, 0)
 }
 
-pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
+pub fn init(force: bool, url: Option<&String>, i: usize) -> Result<bool> {
     let path = if url.is_none() {
         get_current_dir()?
     } else {
@@ -64,7 +64,7 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
 
     let typstfile = path.clone() + "/typst.toml";
     if !check_path_file(&typstfile) {
-        return Err(ErrorState::UnknowError("Pas de typsttoml fdp".to_string()));
+        return Err(Error::empty(ErrorKind::ConfigFile));
     }
 
     let file = TypstConfig::load(&typstfile);
@@ -91,7 +91,7 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
             "{}",
             format!("~ {}:{}", file.package.name, file.package.version).bright_black()
         );
-        return Ok(GoodState::None);
+        return Ok(true);
     }
 
     println!("{}", format!("Installing {}...", file.package.name).bold());
@@ -100,11 +100,11 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
             let mut y = 0;
             let vec_of_dependencies = vec_depend
                 .iter()
-                .map(|a| -> GoodResult {
+                .map(|a| -> Result<bool> {
                     y += 1;
                     init(force, Some(a), i * vec_depend.len() + y) // idk
                 })
-                .collect::<Vec<GoodResult>>();
+                .collect::<Vec<Result<bool>>>();
 
             for result_dependencies in vec_of_dependencies {
                 result_dependencies?;
@@ -123,9 +123,9 @@ pub fn init(force: bool, url: Option<&String>, i: usize) -> GoodResult {
         println!(
             "{}",
             "* Installation complete! If you want to use it as a lib, just do a `utpm link`!"
-                .bright_green()
+                .bold()
         )
     }
 
-    Ok(GoodState::None)
+    Ok(true)
 }

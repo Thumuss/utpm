@@ -10,7 +10,7 @@ use semver::Version;
 
 use crate::utils::{
     paths::{check_path_file, get_current_dir},
-    state::{GoodResult, GoodState},
+    state::Result,
     Extra, Package, TypstConfig,
 };
 
@@ -22,12 +22,12 @@ pub fn run(
     mut pkg: Package,
     mut extra: Extra,
     populate: &bool,
-) -> GoodResult {
+) -> Result<bool> {
     let curr = get_current_dir()?;
     let typ = curr.clone() + "/typst.toml";
     if check_path_file(&typ) && !force {
         println!("Nothing to do!");
-        return Ok(GoodState::None);
+        return Ok(true);
     }
 
     if *force {
@@ -205,7 +205,6 @@ pub fn run(
 
     TypstConfig::new(pkg, extra).write(&typ); // typst.toml
 
-    Ok(GoodState::Message(
-        format!("File created to {typ}").bold().to_string(),
-    ))
+    println!("{}", "File created to {typ}".bold().to_string());
+    Ok(true)
 }

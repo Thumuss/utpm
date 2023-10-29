@@ -4,11 +4,11 @@ use std::fs;
 use crate::utils::{
     copy_dir_all,
     paths::{check_path_dir, d_packages, get_current_dir},
-    state::{ErrorState, GoodResult, GoodState},
+    state::{Error, ErrorKind, Result},
     symlink_all, Extra, TypstConfig,
 };
 
-pub fn run(force: bool, no_copy: bool, path: Option<String>) -> GoodResult {
+pub fn run(force: bool, no_copy: bool, path: Option<String>) -> Result<bool> {
     let curr = path.unwrap_or(get_current_dir()?);
 
     let config = TypstConfig::load(&(curr.clone() + "/typst.toml"));
@@ -16,14 +16,14 @@ pub fn run(force: bool, no_copy: bool, path: Option<String>) -> GoodResult {
         .utpm
         .unwrap_or(Extra::new())
         .namespace
-        .unwrap_or("local".to_string());
+        .unwrap_or("local".into());
 
     let name = config.package.name;
     let version = config.package.version;
     let path = format!("{}/{}/{}/{}", d_packages(), namespace, name, version);
     let info = "Info:".yellow().bold();
     if check_path_dir(&path) && !force {
-        return Err(ErrorState::UnknowError(format!("This package ({}:{}) already exist!\n{info} Put --force to force the copy or change the version in 'typst.toml'", name, version)));
+        return Err(Error::empty(ErrorKind::AlreadyExist(name, version, info)));
     }
 
     fs::create_dir_all(&path)?;
@@ -34,15 +34,17 @@ pub fn run(force: bool, no_copy: bool, path: Option<String>) -> GoodResult {
 
     if no_copy {
         symlink_all(&curr, &path)?;
-        Ok(GoodState::Message(format!(
-            "Project link to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
+        println!(
+            "Project linked to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
             path, namespace, name, version
-        )))
+        );
+        Ok(true)
     } else {
         copy_dir_all(&curr, &path)?;
-        Ok(GoodState::Message(format!(
+        println!(
             "Project copied to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
             path, namespace, name, version
-        )))
+        );
+        Ok(true)
     }
 }

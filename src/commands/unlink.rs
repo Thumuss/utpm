@@ -5,7 +5,7 @@ use std::fs;
 
 use crate::utils::{
     paths::d_packages,
-    state::{GoodResult, GoodState},
+    state::{Error, ErrorKind, Result},
 };
 
 pub fn run(
@@ -14,16 +14,14 @@ pub fn run(
     namespace: Option<String>,
     yes: &bool,
     dnamespace: &bool,
-) -> GoodResult {
+) -> Result<bool> {
     let mut new_namespace = String::from("local");
     if let Some(nspace) = namespace {
         new_namespace = nspace;
     }
     if let Some(ver) = version {
         if name.is_none() {
-            return Err(crate::utils::state::ErrorState::UnknowError(
-                "You need to provide at least a namespace or the name of the package".into(),
-            ));
+            return Err(Error::empty(ErrorKind::Namespace));
         }
         let ans = if !(*yes) {
             Confirm::new("Are you sure to delete this? This is irreversible.")
@@ -42,7 +40,8 @@ pub fn run(
 
         let bool = ans?;
         if !bool {
-            return Ok(GoodState::Message("Nothing to do".to_string()));
+            println!("Nothing to do");
+            return Ok(true);
         }
 
         fs::remove_dir_all(
@@ -68,7 +67,8 @@ pub fn run(
 
         let bool = ans?;
         if !bool {
-            return Ok(GoodState::Message("Nothing to do".to_string()));
+            println!("Nothing to do");
+            return Ok(true);
         }
 
         fs::remove_dir_all(d_packages() + format!("/{new_namespace}").as_str())?;
@@ -83,11 +83,12 @@ pub fn run(
 
         let bool = ans?;
         if !bool {
-            return Ok(GoodState::Message("Nothing to do".to_string()));
+            println!("Nothing to do");
+            return Ok(true);
         }
 
         fs::remove_dir_all(d_packages() + format!("/{}/{}", new_namespace, nm).as_str())?;
     }
     println!("{}", "Removed!".bold());
-    Ok(GoodState::None)
+    Ok(true)
 }

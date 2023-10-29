@@ -1,12 +1,9 @@
 use colored::Colorize;
 use std::fs;
 
-use crate::utils::{
-    paths::d_packages,
-    state::{GoodResult, GoodState},
-};
+use crate::utils::{paths::d_packages, state::Result};
 
-pub fn run() -> GoodResult {
+pub fn run() -> Result<bool> {
     let typ = d_packages();
 
     println!("{}", "Tree listing of your packages\n".bold());
@@ -29,5 +26,5 @@ pub fn run() -> GoodResult {
             }
         }
     }
-    Ok(GoodState::None)
+    Ok(true)
 }
