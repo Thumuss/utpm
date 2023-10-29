@@ -3,8 +3,9 @@ pub mod utils;
 
 use clap::{Parser, Subcommand};
 use commands::{create, install, link, list, unlink};
-use serde_json::json;
-use utils::{paths::d_packages, Extra, Package};
+
+use serde_json::{json, Value};
+use utils::{paths::d_packages, Extra, Package, state::Error};
 
 #[derive(Parser)]
 #[command(author = "Thumus", version = "2.1.0")]
@@ -182,7 +183,13 @@ fn main() {
         Commands::Link { force, no_copy } => link::run(*force, *no_copy, None),
         Commands::List => list::run(),
         Commands::PackagesPath => {
-            println!("Packages are located at: '{}'", d_packages());
+            if json {
+                println!("{}", json!({
+                    "path": d_packages(),
+                }).to_string())
+            } else {
+                println!("Packages are located at: '{}'", d_packages());
+            }
             Ok(true)
         }
         Commands::Unlink {
@@ -199,6 +206,7 @@ fn main() {
             delete_namespace,
         ),
         Commands::BulkDelete { names, namespace } => {
+            let mut vec: Vec<Error> = Vec::new();
             for name in names {
                 let name_and_version = name.split(":").collect::<Vec<&str>>();
                 match unlink::run(
@@ -212,12 +220,18 @@ fn main() {
                     &true,
                     &false,
                 ) {
-                    Ok(_) => None,
+                    Ok(_) => (),
                     Err(err) => {
-                        println!("{}", err.to_string());
-                        Some(err)
+                        vec.push(err);
                     }
                 };
+            }
+            if json {
+                println!("{}", serde_json::to_string(&vec.into_iter().map(|val| val.json()).collect::<Value>()).expect(""));
+            } else {
+                for e in vec {
+                    eprintln!("{}", e);
+                }
             }
             Ok(true)
         }
@@ -230,7 +244,7 @@ fn main() {
             if json {
                 println!("{}", val.json())
             } else {
-                println!("{}", val.to_string())
+                eprintln!("{}", val.to_string())
             }
         }
     }
