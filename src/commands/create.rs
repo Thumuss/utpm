@@ -7,10 +7,11 @@ use colored::Colorize;
 
 use inquire::{list_option::ListOption, required, validator::Validation, MultiSelect, Text};
 use semver::Version;
+use serde_json::json;
 
 use crate::utils::{
     paths::{check_path_file, get_current_dir},
-    state::Result,
+    state::{Responses, Result},
     Extra, Package, TypstConfig,
 };
 
@@ -22,20 +23,25 @@ pub fn run(
     mut pkg: Package,
     mut extra: Extra,
     populate: &bool,
-) -> Result<bool> {
+    mut res: Responses
+) -> Result<Responses> {
     let curr = get_current_dir()?;
     let typ = curr.clone() + "/typst.toml";
     if check_path_file(&typ) && !force {
-        println!("Nothing to do!");
-        return Ok(true);
+        res.push(json!({
+            "message": "Nothing to do"
+        }));
+        return Ok(res);
     }
 
     if *force {
-        println!(
-            "{} {}",
-            "WARNING:".bold().yellow(),
-            "--force is a dangerous flag, use it cautiously".bold()
-        )
+        res.push(json!({
+            "message": format!(
+                "{} {}",
+                "WARNING:".bold().yellow(),
+                "--force is a dangerous flag, use it cautiously".bold()
+            )
+        }));
     }
 
     if !cli {
@@ -204,7 +210,6 @@ pub fn run(
     }
 
     TypstConfig::new(pkg, extra).write(&typ); // typst.toml
-
     println!("{}", "File created to {typ}".bold().to_string());
-    Ok(true)
+    Ok(res)
 }

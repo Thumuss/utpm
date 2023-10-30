@@ -5,7 +5,11 @@ use clap::{Parser, Subcommand};
 use commands::{create, install, link, list, unlink};
 
 use serde_json::{json, Value};
-use utils::{paths::d_packages, Extra, Package, state::Error};
+use utils::{
+    paths::d_packages,
+    state::{Error, Responses},
+    Extra, Package,
+};
 
 #[derive(Parser)]
 #[command(author = "Thumus", version = "2.1.0")]
@@ -145,7 +149,8 @@ enum Commands {
 fn main() {
     let x = Cli::parse();
     let json = x.json;
-    let res = match &x.command {
+    let mut resp = Responses::new(json);
+    let res: Result<Responses, Error> = match &x.command {
         Commands::Create {
             cli,
             force,
@@ -178,19 +183,16 @@ fn main() {
             };
             let mut extra: Extra = Extra::new();
             extra.namespace = namespace.clone();
-            create::run(force, cli, pkg, extra, populate)
+            create::run(force, cli, pkg, extra, populate, resp)
         }
-        Commands::Link { force, no_copy } => link::run(*force, *no_copy, None),
-        Commands::List => list::run(),
+        Commands::Link { force, no_copy } => link::run(*force, *no_copy, None, resp),
+        Commands::List => list::run(resp),
         Commands::PackagesPath => {
-            if json {
-                println!("{}", json!({
-                    "path": d_packages(),
-                }).to_string())
-            } else {
-                println!("Packages are located at: '{}'", d_packages());
-            }
-            Ok(true)
+            resp.push(json!({
+                "path": d_packages(),
+                "message": format!("Packages are located at: '{}'", d_packages()),
+            }));
+            Ok(resp)
         }
         Commands::Unlink {
             name,
@@ -204,6 +206,7 @@ fn main() {
             namespace.clone(),
             yes,
             delete_namespace,
+            resp,
         ),
         Commands::BulkDelete { names, namespace } => {
             let mut vec: Vec<Error> = Vec::new();
@@ -219,6 +222,7 @@ fn main() {
                     namespace.clone(),
                     &true,
                     &false,
+                    resp,
                 ) {
                     Ok(_) => (),
                     Err(err) => {
@@ -227,24 +231,33 @@ fn main() {
                 };
             }
             if json {
-                println!("{}", serde_json::to_string(&vec.into_iter().map(|val| val.json()).collect::<Value>()).expect(""));
+                println!(
+                    "{}",
+                    serde_json::to_string(
+                        &vec.into_iter().map(|val| val.json()).collect::<Value>()
+                    )
+                    .expect("")
+                );
             } else {
                 for e in vec {
                     eprintln!("{}", e);
                 }
             }
-            Ok(true)
+            Ok(resp)
         }
-        Commands::Install { url, force } => install::run(force.clone(), url.as_ref()),
+        Commands::Install { url, force } => install::run(force.clone(), url.as_ref(), resp),
     };
-
     match res {
-        Ok(_) => (),
+        Ok(val) => {
+            if json {
+                print!("{}", val.json())
+            }
+        }
         Err(val) => {
             if json {
-                println!("{}", val.json())
+                eprint!("{}", val.json())
             } else {
-                eprintln!("{}", val.to_string())
+                eprint!("{}", val.to_str())
             }
         }
     }

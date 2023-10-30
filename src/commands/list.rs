@@ -1,9 +1,9 @@
 use colored::Colorize;
 use std::fs;
 
-use crate::utils::{paths::d_packages, state::Result};
+use crate::utils::{paths::d_packages, state::{Result, Responses}};
 
-pub fn run() -> Result<bool> {
+pub fn run(mut res: Responses) -> Result<Responses> {
     let typ = d_packages();
 
     println!("{}", "Tree listing of your packages\n".bold());

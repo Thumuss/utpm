@@ -45,9 +45,11 @@
 
 This update will introduce documentations, a better handling error system, JSON and some commands. 
 
+- [x] Better handling errors (json, string, toml maybe)
 - [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used
 - [ ] Templates, Package, Plugin
 - [ ] JSON only mode 
+- [ ] Remake clap
 - [ ] Documentation for developpers and users
   - [ ] utils.rs
   - [ ] main.rs

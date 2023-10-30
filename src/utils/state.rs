@@ -21,6 +21,45 @@ pub enum ErrorKind {
     SemVer,
 }
 
+pub struct Responses {
+    messages: Vec<Value>,
+    json: bool,
+}
+
+impl Responses {
+    pub fn new(json: bool) -> Self {
+        Self {
+            messages: vec![],
+            json,
+        }
+    }
+
+    pub fn push(&mut self, val: Value) {
+        if self.json {
+            self.messages.push(val);
+        } else {
+            println!()
+        }
+    }
+
+    pub fn to_str(&self) -> String {
+        let mut string: String = "".into();
+        for message in &self.messages {
+            string += message.get("message").unwrap().to_string().as_str();
+            string += "\n";
+        }
+        string
+    }
+
+    pub fn json(&self) -> Value {
+        serde_json::from_str(serde_json::to_string(&self.messages).unwrap().as_str()).unwrap()
+    }
+
+    pub fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_str())
+    }
+}
+
 impl ErrorKind {
     pub fn message(&self) -> String {
         match self {
@@ -73,7 +112,7 @@ impl Error {
             "message": message,
         })
     }
-    pub fn to_string(&self) -> String {
+    pub fn to_str(&self) -> String {
         let kind_message = format!("{} Error", self.kind.to_string());
         if let Some(message) = &self.message {
             format!("{}: {}", kind_message.bold().red(), message)
@@ -83,11 +122,17 @@ impl Error {
     }
 
     pub fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(f, "{}", self.to_str())
     }
 }
 
 impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.display(f)
+    }
+}
+
+impl fmt::Display for Responses {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.display(f)
     }

@@ -4,7 +4,7 @@ use crate::utils::{
     paths::{
         check_path_dir, check_path_file, d_packages, datalocalutpm, get_current_dir, get_ssh_dir,
     },
-    state::{Error, ErrorKind, Result},
+    state::{Error, ErrorKind, Result, Responses},
     TypstConfig,
 };
 use colored::Colorize;
@@ -12,15 +12,15 @@ use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository};
 
 use super::link;
 
-pub fn run(force: bool, url: Option<&String>) -> Result<bool> {
+pub fn run(force: bool, url: Option<&String>, mut res: Responses) -> Result<Responses> {
     let path = format!("{}/tmp", datalocalutpm());
     if check_path_dir(&path) {
         fs::remove_dir_all(path)?;
     }
-    init(force, url, 0)
+    init(force, url, 0, res)
 }
 
-pub fn init(force: bool, url: Option<&String>, i: usize) -> Result<bool> {
+pub fn init(force: bool, url: Option<&String>, i: usize,  mut res: Responses) -> Result<Responses> {
     let path = if url.is_none() {
         get_current_dir()?
     } else {

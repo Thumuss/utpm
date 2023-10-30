@@ -4,11 +4,11 @@ use std::fs;
 use crate::utils::{
     copy_dir_all,
     paths::{check_path_dir, d_packages, get_current_dir},
-    state::{Error, ErrorKind, Result},
+    state::{Error, ErrorKind, Result, Responses},
     symlink_all, Extra, TypstConfig,
 };
 
-pub fn run(force: bool, no_copy: bool, path: Option<String>) -> Result<bool> {
+pub fn run(force: bool, no_copy: bool, path: Option<String>, mut res: Responses) -> Result<Responses> {
     let curr = path.unwrap_or(get_current_dir()?);
 
     let config = TypstConfig::load(&(curr.clone() + "/typst.toml"));

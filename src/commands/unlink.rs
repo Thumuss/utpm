@@ -5,7 +5,7 @@ use std::fs;
 
 use crate::utils::{
     paths::d_packages,
-    state::{Error, ErrorKind, Result},
+    state::{Error, ErrorKind, Result, Responses},
 };
 
 pub fn run(
@@ -14,7 +14,8 @@ pub fn run(
     namespace: Option<String>,
     yes: &bool,
     dnamespace: &bool,
-) -> Result<bool> {
+    mut res: Responses
+) -> Result<Responses> {
     let mut new_namespace = String::from("local");
     if let Some(nspace) = namespace {
         new_namespace = nspace;
