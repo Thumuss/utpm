@@ -5,7 +5,7 @@ use std::{
 
 use colored::Colorize;
 
-use inquire::{list_option::ListOption, required, validator::Validation, MultiSelect, Text};
+use inquire::{required, validator::Validation, Confirm, Text};
 use semver::Version;
 use serde_json::json;
 
@@ -15,26 +15,37 @@ use crate::utils::{
     Extra, Package, TypstConfig,
 };
 
-static TYPES: [&str; 4] = ["Local", "Public", "More options", "Namespace"];
+use super::CreateArgs;
 
-pub fn run(
-    force: &bool,
-    cli: &bool,
-    mut pkg: Package,
-    mut extra: Extra,
-    populate: &bool,
-    mut res: Responses
-) -> Result<Responses> {
+pub fn run(cmd: &CreateArgs, res: &mut Responses) -> Result<bool> {
     let curr = get_current_dir()?;
     let typ = curr.clone() + "/typst.toml";
-    if check_path_file(&typ) && !force {
+
+    let mut extra = Extra::new();
+    extra.namespace = cmd.namespace.to_owned();
+
+    let mut pkg = Package {
+        name: cmd.name.to_owned().unwrap_or("temp".into()),
+        version: cmd.version.to_owned(),
+        entrypoint: cmd.entrypoint.to_owned(),
+        authors: cmd.authors.to_owned(),
+        license: cmd.license.to_owned(),
+        description: cmd.description.to_owned(),
+        repository: cmd.repository.to_owned(),
+        homepage: cmd.homepage.to_owned(),
+        keywords: cmd.keywords.to_owned(),
+        compiler: cmd.compiler.to_owned(),
+        exclude: cmd.exclude.to_owned(),
+    };
+
+    if check_path_file(&typ) && !cmd.force {
         res.push(json!({
             "message": "Nothing to do"
         }));
-        return Ok(res);
+        return Ok(false);
     }
 
-    if *force {
+    if cmd.force {
         res.push(json!({
             "message": format!(
                 "{} {}",
@@ -44,27 +55,13 @@ pub fn run(
         }));
     }
 
-    if !cli {
-        let choose_options = MultiSelect::new(
-            "Choose between local and public package and options: ",
-            TYPES.to_vec(),
+    if !cmd.cli {
+        let public = Confirm::new("Do you want to make your package public? Questions are on authors, license, description").prompt()?;
+        let more = public && Confirm::new("Do you want more questions to customise your package? Questions are on repository url, homepage url, keywords, compiler version, excluded files").prompt()?;
+        let extra_opts = Confirm::new(
+            "Do you want to specify informations of utpm? Questions are on the namespace",
         )
-        .with_validator(|a: &[ListOption<&&str>]| {
-            let x = a
-                .iter()
-                .any(|o| *o.value == "Local" || *o.value == "Public");
-            match x {
-                true => Ok(Validation::Valid),
-                false => Ok(Validation::Invalid(
-                    "Remember to chose between public and local".into(),
-                )),
-            }
-        })
         .prompt()?;
-
-        let public = choose_options.contains(&TYPES[1]);
-        let more = choose_options.contains(&TYPES[2]);
-        let extra_opts = choose_options.contains(&TYPES[3]);
 
         pkg.name = Text::new("Name: ")
             .with_validator(required!("This field is required"))
@@ -186,7 +183,7 @@ pub fn run(
         }
     }
 
-    if *populate {
+    if cmd.populate {
         let mut file = File::create(curr.clone() + "/README.md")?; // README.md
         file.write_all(("# ".to_string() + pkg.name.clone().as_str()).as_bytes())?;
         if let Some(license) = &pkg.license {
@@ -210,6 +207,8 @@ pub fn run(
     }
 
     TypstConfig::new(pkg, extra).write(&typ); // typst.toml
-    println!("{}", "File created to {typ}".bold().to_string());
-    Ok(res)
+    res.push(json!({
+        "message": format!("{}", "File created to {typ}".bold().to_string())
+    }));
+    Ok(true)
 }

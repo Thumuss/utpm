@@ -38,7 +38,7 @@ impl Responses {
         if self.json {
             self.messages.push(val);
         } else {
-            println!()
+            println!("{}", val.get("message").unwrap());
         }
     }
 

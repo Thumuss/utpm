@@ -1,35 +1,30 @@
 use colored::Colorize;
 use inquire::Confirm;
-use semver::Version;
+use serde_json::json;
 use std::fs;
 
 use crate::utils::{
     paths::d_packages,
-    state::{Error, ErrorKind, Result, Responses},
+    state::{Error, ErrorKind, Responses, Result},
 };
 
-pub fn run(
-    name: &Option<String>,
-    version: Option<Version>,
-    namespace: Option<String>,
-    yes: &bool,
-    dnamespace: &bool,
-    mut res: Responses
-) -> Result<Responses> {
+use super::UnlinkArgs;
+
+pub fn run(cmd: &UnlinkArgs, res: &mut Responses) -> Result<bool> {
     let mut new_namespace = String::from("local");
-    if let Some(nspace) = namespace {
-        new_namespace = nspace;
+    if let Some(nspace) = &cmd.namespace {
+        new_namespace = nspace.to_owned();
     }
-    if let Some(ver) = version {
-        if name.is_none() {
+    if let Some(ver) = &cmd.version {
+        if cmd.name.is_none() {
             return Err(Error::empty(ErrorKind::Namespace));
         }
-        let ans = if !(*yes) {
+        let ans = if !(cmd.yes) {
             Confirm::new("Are you sure to delete this? This is irreversible.")
                 .with_help_message(
                     format!(
                         "You want to erase {}/{}",
-                        name.clone().unwrap(),
+                        cmd.name.clone().unwrap(),
                         ver.to_string()
                     )
                     .as_str(),
@@ -41,8 +36,10 @@ pub fn run(
 
         let bool = ans?;
         if !bool {
-            println!("Nothing to do");
-            return Ok(true);
+            res.push(json!({
+                "message": "Nothing to do"
+            }));
+            return Ok(false);
         }
 
         fs::remove_dir_all(
@@ -50,13 +47,13 @@ pub fn run(
                 + format!(
                     "/{}/{}/{}",
                     new_namespace,
-                    name.clone().unwrap(),
+                    cmd.name.clone().unwrap(),
                     ver.to_string()
                 )
                 .as_str(),
         )?;
-    } else if *dnamespace {
-        let ans = if !(*yes) {
+    } else if cmd.delete_namespace {
+        let ans = if !(cmd.yes) {
             Confirm::new("Are you sure to delete this? This is irreversible.")
                 .with_help_message(
                     format!("You want to erase @{new_namespace}, the namespace").as_str(),
@@ -68,13 +65,15 @@ pub fn run(
 
         let bool = ans?;
         if !bool {
-            println!("Nothing to do");
-            return Ok(true);
+            res.push(json!({
+                "message": "Nothing to do"
+            }));
+            return Ok(false);
         }
 
         fs::remove_dir_all(d_packages() + format!("/{new_namespace}").as_str())?;
-    } else if let Some(nm) = name {
-        let ans = if !(*yes) {
+    } else if let Some(nm) = &cmd.name {
+        let ans = if !(cmd.yes) {
             Confirm::new("Are you sure to delete this? This is irreversible.")
                 .with_help_message(format!("You want to erase {}", nm).as_str())
                 .prompt()
@@ -84,12 +83,16 @@ pub fn run(
 
         let bool = ans?;
         if !bool {
-            println!("Nothing to do");
-            return Ok(true);
+            res.push(json!({
+                "message": "Nothing to do"
+            }));
+            return Ok(false);
         }
 
         fs::remove_dir_all(d_packages() + format!("/{}/{}", new_namespace, nm).as_str())?;
     }
-    println!("{}", "Removed!".bold());
+    res.push(json!({
+        "message": format!("{}", "Removed!".bold())
+    }));
     Ok(true)
 }

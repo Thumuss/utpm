@@ -1,33 +1,38 @@
 use std::{env, fs, path::Path};
 
-use crate::utils::{
-    paths::{
-        check_path_dir, check_path_file, d_packages, datalocalutpm, get_current_dir, get_ssh_dir,
+use crate::{
+    commands::LinkArgs,
+    utils::{
+        paths::{
+            check_path_dir, check_path_file, d_packages, datalocalutpm, get_current_dir,
+            get_ssh_dir,
+        },
+        state::{Error, ErrorKind, Responses, Result},
+        TypstConfig,
     },
-    state::{Error, ErrorKind, Result, Responses},
-    TypstConfig,
 };
 use colored::Colorize;
 use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository};
 
-use super::link;
+use super::{link, InstallArgs};
 
-pub fn run(force: bool, url: Option<&String>, mut res: Responses) -> Result<Responses> {
+pub fn run(cmd: &InstallArgs, res: &mut Responses) -> Result<bool> {
     let path = format!("{}/tmp", datalocalutpm());
     if check_path_dir(&path) {
         fs::remove_dir_all(path)?;
     }
-    init(force, url, 0, res)
+    init(cmd, res, 0)?;
+    Ok(true)
 }
 
-pub fn init(force: bool, url: Option<&String>, i: usize,  mut res: Responses) -> Result<Responses> {
-    let path = if url.is_none() {
+pub fn init(cmd: &InstallArgs, res: &mut Responses, i: usize) -> Result<bool> {
+    let path = if cmd.url.is_none() {
         get_current_dir()?
     } else {
         format!("{}/tmp/{}", datalocalutpm(), i)
     };
 
-    if let Some(x) = url {
+    if let Some(x) = &cmd.url {
         fs::create_dir_all(&path)?;
         let sshpath = get_ssh_dir()?;
         let ed = sshpath.clone() + "/id_ed25519";
@@ -102,7 +107,12 @@ pub fn init(force: bool, url: Option<&String>, i: usize,  mut res: Responses) ->
                 .iter()
                 .map(|a| -> Result<bool> {
                     y += 1;
-                    init(force, Some(a), i * vec_depend.len() + y) // idk
+                    let ins = InstallArgs {
+                        force: cmd.force,
+                        url: Some(a.to_string()),
+                    };
+                    init(&ins, res, i * vec_depend.len() + y)?;
+                    Ok(true)
                 })
                 .collect::<Vec<Result<bool>>>();
 
@@ -112,8 +122,13 @@ pub fn init(force: bool, url: Option<&String>, i: usize,  mut res: Responses) ->
         }
     }
 
-    if !url.is_none() {
-        link::run(force, false, Some(path.clone()))?;
+    if !cmd.url.is_none() {
+        let lnk = LinkArgs {
+            force: cmd.force,
+            no_copy: false,
+        };
+
+        link::run(&lnk, Some(path.clone()), res)?; //TODO: change here too
         fs::remove_dir_all(&path)?;
         println!(
             "{}",
