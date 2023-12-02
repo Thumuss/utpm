@@ -3,6 +3,7 @@ use semver::Version;
 use serde_json::{json, Value};
 use std::{fmt, io::Error as IError};
 
+/// All errors implemented in utpm
 #[derive(Debug)]
 pub enum ErrorKind {
     UnknowError(String),
@@ -21,9 +22,16 @@ pub enum ErrorKind {
     SemVer,
 }
 
+/// Types 
+#[derive(Debug)]
+pub enum ResponseKind {
+    Message(String),
+    Value(Value),
+}
+
 pub struct Responses {
-    messages: Vec<Value>,
-    json: bool,
+    messages: Vec<ResponseKind>,
+    pub json: bool,
 }
 
 impl Responses {
@@ -34,25 +42,52 @@ impl Responses {
         }
     }
 
-    pub fn push(&mut self, val: Value) {
+    pub fn pushs(&mut self, vals: Vec<ResponseKind>) {
+        for e in vals {
+            self.push(e);
+        }
+    }
+
+    pub fn push(&mut self, val: ResponseKind) {
         if self.json {
             self.messages.push(val);
         } else {
-            println!("{}", val.get("message").unwrap());
+            match val {
+                ResponseKind::Message(string) => println!("{}", string),
+                ResponseKind::Value(val) => println!("{}", val.to_string()),
+            }
         }
     }
 
     pub fn to_str(&self) -> String {
         let mut string: String = "".into();
         for message in &self.messages {
-            string += message.get("message").unwrap().to_string().as_str();
-            string += "\n";
+            match message {
+                ResponseKind::Message(str) => string = format!("{}{}\n", string, str),
+                ResponseKind::Value(_) => todo!(),
+            };
         }
         string
     }
 
-    pub fn json(&self) -> Value {
-        serde_json::from_str(serde_json::to_string(&self.messages).unwrap().as_str()).unwrap()
+    pub fn to_json(&self) -> Value {
+        serde_json::from_str(
+            serde_json::to_string(
+                &self
+                    .messages
+                    .iter()
+                    .map(|a| match a {
+                        ResponseKind::Message(str) => {
+                            json!({ "message": str.normal().clear().to_string() })
+                        }
+                        ResponseKind::Value(val) => val.clone(),
+                    })
+                    .collect::<Value>(),
+            )
+            .unwrap()
+            .as_str(),
+        )
+        .unwrap()
     }
 
     pub fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {

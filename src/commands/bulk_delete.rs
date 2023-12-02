@@ -1,6 +1,6 @@
 use serde_json::json;
 
-use crate::utils::state::{Error, Responses, Result};
+use crate::utils::state::{Error, ResponseKind::*, Responses, Result};
 
 use super::{unlink, BulkDeleteArgs, UnlinkArgs};
 
@@ -29,10 +29,16 @@ pub fn run(cmd: &BulkDeleteArgs, res: &mut Responses) -> Result<bool> {
             }
         };
     }
-    res.push(json!({
-        "success": cmd.names.len() - vec.len(),
-        "failed": vec.len(),
-        "message": format!("{}/{} successful", cmd.names.len() - vec.len(), cmd.names.len())
-    }));
+    res.pushs(vec![
+        Value(json!({
+            "success": cmd.names.len() - vec.len(),
+            "failed": vec.len(),
+        })),
+        Message(format!(
+            "{}/{} successful",
+            cmd.names.len() - vec.len(),
+            cmd.names.len()
+        )),
+    ]);
     Ok(true)
 }

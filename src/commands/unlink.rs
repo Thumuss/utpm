@@ -1,11 +1,10 @@
 use colored::Colorize;
 use inquire::Confirm;
-use serde_json::json;
 use std::fs;
 
 use crate::utils::{
     paths::d_packages,
-    state::{Error, ErrorKind, Responses, Result},
+    state::{Error, ErrorKind, ResponseKind::*, Responses, Result},
 };
 
 use super::UnlinkArgs;
@@ -36,9 +35,7 @@ pub fn run(cmd: &UnlinkArgs, res: &mut Responses) -> Result<bool> {
 
         let bool = ans?;
         if !bool {
-            res.push(json!({
-                "message": "Nothing to do"
-            }));
+            res.push(Message("Nothing to do".into()));
             return Ok(false);
         }
 
@@ -65,9 +62,8 @@ pub fn run(cmd: &UnlinkArgs, res: &mut Responses) -> Result<bool> {
 
         let bool = ans?;
         if !bool {
-            res.push(json!({
-                "message": "Nothing to do"
-            }));
+            res.push(Message("Nothing to do".into()));
+
             return Ok(false);
         }
 
@@ -83,16 +79,18 @@ pub fn run(cmd: &UnlinkArgs, res: &mut Responses) -> Result<bool> {
 
         let bool = ans?;
         if !bool {
-            res.push(json!({
-                "message": "Nothing to do"
-            }));
+            res.push(Message("Nothing to do".into()));
+
             return Ok(false);
         }
 
         fs::remove_dir_all(d_packages() + format!("/{}/{}", new_namespace, nm).as_str())?;
     }
-    res.push(json!({
-        "message": format!("{}", "Removed!".bold())
-    }));
+    if res.json {
+        res.push(Message(format!("{}", "Removed!".bold())));
+    } else {
+        println!("{}", "Removed!".bold())
+    }
+
     Ok(true)
 }

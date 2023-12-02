@@ -4,20 +4,23 @@ use std::fs;
 
 use crate::utils::{
     paths::d_packages,
-    state::{Responses, Result},
+    state::{ResponseKind::*, Responses, Result},
 };
 
 pub fn run(res: &mut Responses) -> Result<bool> {
     let typ = d_packages();
-    let mut msg = "".to_string();
-    msg += &format!("{}\n", "Tree listing of your packages\n".bold());
+    if !res.json {
+        println!("{}", "Tree listing of your packages\n".bold())
+    };
     let dirs = fs::read_dir(&typ)?;
 
     let mut data: Vec<Value> = vec![];
 
     for dir_res in dirs {
         let dir = dir_res?;
-        msg += &format!("@{}:\n", dir.file_name().to_str().unwrap().green().bold());
+        if !res.json {
+            println!("@{}:", dir.file_name().to_str().unwrap().green().bold());
+        }
         let subupdirs = fs::read_dir(dir.path())?;
 
         let mut map = Map::new();
@@ -25,8 +28,9 @@ pub fn run(res: &mut Responses) -> Result<bool> {
 
         for dir_res in subupdirs {
             let dir = dir_res?;
-
-            msg += &format!("  {}:\n", dir.file_name().to_str().unwrap().green().bold());
+            if !res.json {
+                println!("  {}:", dir.file_name().to_str().unwrap().green().bold());
+            }
 
             let subdirs = fs::read_dir(dir.path())?;
 
@@ -36,7 +40,9 @@ pub fn run(res: &mut Responses) -> Result<bool> {
             for sub_dir_res in subdirs {
                 let subdir = sub_dir_res?;
                 list2.push(json!(subdir.file_name().to_str()));
-                msg += &format!("    - {}\n", subdir.file_name().to_str().unwrap().green());
+                if !res.json {
+                    println!("    - {}", subdir.file_name().to_str().unwrap().green());
+                }
             }
 
             let array2 = Value::Array(list2);
@@ -51,9 +57,7 @@ pub fn run(res: &mut Responses) -> Result<bool> {
 
         data.push(dir_data);
     }
-    res.push(json!({
-        "message": msg,
-        "data": data
-    }));
+    // TODO: It's working for now but it will be changed one day
+    res.push(Value(json!(data)));
     Ok(true)
 }

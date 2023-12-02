@@ -5,7 +5,7 @@ use std::fs;
 use crate::utils::{
     copy_dir_all,
     paths::{check_path_dir, d_packages, get_current_dir},
-    state::{Error, ErrorKind, Responses, Result},
+    state::{Error, ErrorKind, ResponseKind::*, Responses, Result},
     symlink_all, Extra, TypstConfig,
 };
 
@@ -41,18 +41,18 @@ pub fn run(cmd: &LinkArgs, path: Option<String>, res: &mut Responses) -> Result<
             "Project linked to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
             path, namespace, name, version
         );
-        res.push(json!({
+        res.push(Value(json!({
             "message": s,
-        }));
+        })));
     } else {
         copy_dir_all(&curr, &path)?;
         let s = format!(
             "Project copied to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
             path, namespace, name, version
         );
-        res.push(json!({
+        res.push(Value(json!({
             "message": s,
-        }));
+        })));
     }
     Ok(true)
 }

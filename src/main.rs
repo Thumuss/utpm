@@ -22,7 +22,7 @@ fn main() {
     match result {
         Ok(_) => {
             if json {
-                print!("{}", res.json())
+                print!("{}", res.to_json())
             }
         }
         Err(val) => {

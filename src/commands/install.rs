@@ -80,7 +80,6 @@ pub fn init(cmd: &InstallArgs, res: &mut Responses, i: usize) -> Result<bool> {
             version: None,
             namespace: Some("local".to_string()),
             dependencies: None,
-            types: Some(crate::utils::ProjectType::Package),
         })
         .namespace
         .unwrap_or("local".into());

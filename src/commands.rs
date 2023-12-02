@@ -148,13 +148,12 @@ pub enum Commands {
 
 #[derive(Parser)]
 #[command(author = "Thumus", version = "2.1.0")]
-
 /// An unofficial typst package manager for your projects.
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
 
     /// Output everything into a json format. Available on every commands.
-    #[arg(short = 'j', long)]
+    #[arg(short = 'j', long, global = true)]
     pub json: bool,
 }
