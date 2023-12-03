@@ -11,8 +11,8 @@ use crate::{
         TypstConfig,
     },
 };
-use colored::Colorize;
 use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks, Repository};
+use owo_colors::OwoColorize;
 
 use super::{link, InstallArgs};
 

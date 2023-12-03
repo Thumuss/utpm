@@ -3,9 +3,8 @@ use std::{
     io::Write,
 };
 
-use colored::Colorize;
-
 use inquire::{required, validator::Validation, Confirm, Text};
+use owo_colors::OwoColorize;
 use semver::Version;
 
 use crate::utils::{

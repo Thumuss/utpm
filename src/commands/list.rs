@@ -1,4 +1,4 @@
-use colored::Colorize;
+use owo_colors::OwoColorize;
 use serde_json::{json, Map, Value};
 use std::fs;
 
@@ -58,6 +58,8 @@ pub fn run(res: &mut Responses) -> Result<bool> {
         data.push(dir_data);
     }
     // TODO: It's working for now but it will be changed one day
-    res.push(Value(json!(data)));
+    if res.json {
+        res.push(Value(json!(data)))
+    };
     Ok(true)
 }

@@ -2,7 +2,9 @@ pub mod commands;
 pub mod utils;
 
 use clap::Parser;
-use commands::{bulk_delete, create, install, link, list, package_path, unlink, Cli, Commands};
+use commands::{
+    bulk_delete, create, info, install, link, list, package_path, unlink, Cli, Commands,
+};
 
 use utils::state::{Error, Responses};
 
@@ -18,6 +20,7 @@ fn main() {
         Commands::Unlink(cmd) => unlink::run(cmd, &mut res),
         Commands::BulkDelete(cmd) => bulk_delete::run(cmd, &mut res),
         Commands::Install(cmd) => install::run(cmd, &mut res),
+        Commands::Info(cmd) => info::run(cmd, &mut res),
     };
     match result {
         Ok(_) => {

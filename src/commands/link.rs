@@ -1,4 +1,4 @@
-use colored::Colorize;
+use owo_colors::OwoColorize;
 use serde_json::json;
 use std::fs;
 
@@ -24,9 +24,14 @@ pub fn run(cmd: &LinkArgs, path: Option<String>, res: &mut Responses) -> Result<
     let name = config.package.name;
     let version = config.package.version;
     let path = format!("{}/{}/{}/{}", d_packages(), namespace, name, version);
-    let info = "Info:".yellow().bold();
+    let binding = "Info:".yellow();
+    let info = binding.bold();
     if check_path_dir(&path) && !cmd.force {
-        return Err(Error::empty(ErrorKind::AlreadyExist(name, version, info)));
+        return Err(Error::empty(ErrorKind::AlreadyExist(
+            name,
+            version,
+            format!("{}", info),
+        )));
     }
 
     fs::create_dir_all(&path)?;

@@ -1,6 +1,7 @@
 // Linker
 pub mod bulk_delete;
 pub mod create;
+pub mod info;
 pub mod install;
 pub mod link;
 pub mod list;
@@ -116,6 +117,13 @@ pub struct BulkDeleteArgs {
 }
 
 #[derive(Parser, Clone, Debug)]
+pub struct InfoArgs {
+    /// The repository you want to check
+    #[arg(short, long)]
+    url: Option<String>,
+}
+
+#[derive(Parser, Clone, Debug)]
 pub struct InstallArgs {
     /// If you want to install a specific package
     pub url: Option<String>,
@@ -135,6 +143,8 @@ pub enum Commands {
     List,
     /// Display path to typst packages folder
     PackagesPath,
+
+    Info(InfoArgs),
 
     /// Delete package previously install with utpm
     Unlink(UnlinkArgs),

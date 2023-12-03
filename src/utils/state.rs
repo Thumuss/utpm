@@ -1,4 +1,4 @@
-use colored::{ColoredString, Colorize};
+use owo_colors::OwoColorize;
 use semver::Version;
 use serde_json::{json, Value};
 use std::{fmt, io::Error as IError};
@@ -14,7 +14,7 @@ pub enum ErrorKind {
 
     Namespace,
     ConfigFile,
-    AlreadyExist(String, Version, ColoredString),
+    AlreadyExist(String, Version, String),
 
     IO,
     Questions,
@@ -22,7 +22,7 @@ pub enum ErrorKind {
     SemVer,
 }
 
-/// Types 
+/// Types
 #[derive(Debug)]
 pub enum ResponseKind {
     Message(String),
@@ -78,7 +78,13 @@ impl Responses {
                     .iter()
                     .map(|a| match a {
                         ResponseKind::Message(str) => {
-                            json!({ "message": str.normal().clear().to_string() })
+                            println!(
+                                "{:?}",
+                                str.split(" ")
+                                    .map(|a| a.to_string() + " ")
+                                    .collect::<String>()
+                            );
+                            json!({ "message": str })
                         }
                         ResponseKind::Value(val) => val.clone(),
                     })

@@ -1,5 +1,5 @@
-use colored::Colorize;
 use inquire::Confirm;
+use owo_colors::OwoColorize;
 use std::fs;
 
 use crate::utils::{
