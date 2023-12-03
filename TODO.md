@@ -47,6 +47,7 @@ This update will introduce documentations, a better handling error system, JSON 
 
 - [x] Better handling errors (json, string, toml maybe)
 - [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used
+- [ ] Create a global and local configuration instead of using typst.toml file. It can become harder to 
 - [x] JSON only mode 
 - [x] Remake clap
 - [ ] Documentation for developpers and users
@@ -59,7 +60,7 @@ This update will introduce documentations, a better handling error system, JSON 
     - [ ] commands/unlink.rs
     - [ ] commands/install.rs
 - [ ] New commands for install:
-  - [ ] Info.rs
+  - [ ] Info.rs -> Partial impl for now
   - [ ] Update, (using semver) → \w listing dependencies
   - [ ] Clean?
 
