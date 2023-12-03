@@ -40,3 +40,27 @@
 - [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used -> Not for now
 - [ ] Templates (first impl) -> Not now → V3
 - [ ] JSON only mode 
+
+## V3
+
+This update will introduce documentations, a better handling error system, JSON and some commands. 
+
+- [x] Better handling errors (json, string, toml maybe)
+- [ ] Maybe a listing dependencies system? -> Track every dependencies to delete when they aren't used
+- [ ] Create a global and local configuration instead of using typst.toml file. It can become harder to 
+- [x] JSON only mode 
+- [x] Remake clap
+- [ ] Documentation for developpers and users
+  - [ ] utils.rs
+  - [ ] main.rs
+  - [ ] commands.rs → remake it?
+    - [ ] commands/create.rs
+    - [ ] commands/link.rs
+    - [ ] commands/list.rs
+    - [ ] commands/unlink.rs
+    - [ ] commands/install.rs
+- [ ] New commands for install:
+  - [ ] Info.rs -> Partial impl for now
+  - [ ] Update, (using semver) → \w listing dependencies
+  - [ ] Clean?
+

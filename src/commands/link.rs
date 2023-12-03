@@ -1,14 +1,17 @@
-use colored::Colorize;
+use owo_colors::OwoColorize;
+use serde_json::json;
 use std::fs;
 
 use crate::utils::{
     copy_dir_all,
     paths::{check_path_dir, d_packages, get_current_dir},
-    state::{ErrorState, GoodResult, GoodState},
+    state::{Error, ErrorKind, ResponseKind::*, Responses, Result},
     symlink_all, Extra, TypstConfig,
 };
 
-pub fn run(force: bool, no_copy: bool, path: Option<String>) -> GoodResult {
+use super::LinkArgs;
+
+pub fn run(cmd: &LinkArgs, path: Option<String>, res: &mut Responses) -> Result<bool> {
     let curr = path.unwrap_or(get_current_dir()?);
 
     let config = TypstConfig::load(&(curr.clone() + "/typst.toml"));
@@ -16,33 +19,45 @@ pub fn run(force: bool, no_copy: bool, path: Option<String>) -> GoodResult {
         .utpm
         .unwrap_or(Extra::new())
         .namespace
-        .unwrap_or("local".to_string());
+        .unwrap_or("local".into());
 
     let name = config.package.name;
     let version = config.package.version;
     let path = format!("{}/{}/{}/{}", d_packages(), namespace, name, version);
-    let info = "Info:".yellow().bold();
-    if check_path_dir(&path) && !force {
-        return Err(ErrorState::UnknowError(format!("This package ({}:{}) already exist!\n{info} Put --force to force the copy or change the version in 'typst.toml'", name, version)));
+    let binding = "Info:".yellow();
+    let info = binding.bold();
+    if check_path_dir(&path) && !cmd.force {
+        return Err(Error::empty(ErrorKind::AlreadyExist(
+            name,
+            version,
+            format!("{}", info),
+        )));
     }
 
     fs::create_dir_all(&path)?;
 
-    if force {
+    if cmd.force {
         fs::remove_dir_all(&path)?
     }
 
-    if no_copy {
+    if cmd.no_copy {
         symlink_all(&curr, &path)?;
-        Ok(GoodState::Message(format!(
-            "Project link to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
+        let s = format!(
+            "Project linked to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
             path, namespace, name, version
-        )))
+        );
+        res.push(Value(json!({
+            "message": s,
+        })));
     } else {
         copy_dir_all(&curr, &path)?;
-        Ok(GoodState::Message(format!(
+        let s = format!(
             "Project copied to: {} \nTry importing with:\n #import \"@{}/{}:{}\": *",
             path, namespace, name, version
-        )))
+        );
+        res.push(Value(json!({
+            "message": s,
+        })));
     }
+    Ok(true)
 }

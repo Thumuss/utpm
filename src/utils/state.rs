@@ -1,88 +1,206 @@
-use colored::Colorize;
+use owo_colors::OwoColorize;
+use semver::Version;
+use serde_json::{json, Value};
 use std::{fmt, io::Error as IError};
-pub enum GoodState {
-    Message(String),
-    None,
-}
 
-pub enum ErrorState {
+/// All errors implemented in utpm
+#[derive(Debug)]
+pub enum ErrorKind {
     UnknowError(String),
 
-    CurrentDirectoryError(String),
-    CreationDirectoryError(String),
-    HomeDirectoryError(String),
+    CurrentDir,
+    CreationDir,
+    HomeDir,
 
-    UnexpectedIOError(String),
-    UnexpectedQuestionsError(String),
-    UnexpectedGitError(String),
-    UnexpectedSemVerError(String),
+    Namespace,
+    ConfigFile,
+    AlreadyExist(String, Version, String),
 
-    UnexpectedTokenError(String),
-    NoneTokenError(String),
+    IO,
+    Questions,
+    Git,
+    SemVer,
 }
 
-pub type Result<T> = std::result::Result<T, ErrorState>;
-pub type GoodResult = std::result::Result<GoodState, ErrorState>;
+/// Types
+#[derive(Debug)]
+pub enum ResponseKind {
+    Message(String),
+    Value(Value),
+}
 
-impl fmt::Display for ErrorState {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+pub struct Responses {
+    messages: Vec<ResponseKind>,
+    pub json: bool,
+}
+
+impl Responses {
+    pub fn new(json: bool) -> Self {
+        Self {
+            messages: vec![],
+            json,
+        }
+    }
+
+    pub fn pushs(&mut self, vals: Vec<ResponseKind>) {
+        for e in vals {
+            self.push(e);
+        }
+    }
+
+    pub fn push(&mut self, val: ResponseKind) {
+        if self.json {
+            self.messages.push(val);
+        } else {
+            match val {
+                ResponseKind::Message(string) => println!("{}", string),
+                ResponseKind::Value(val) => println!("{}", val.to_string()),
+            }
+        }
+    }
+
+    pub fn to_str(&self) -> String {
+        let mut string: String = "".into();
+        for message in &self.messages {
+            match message {
+                ResponseKind::Message(str) => string = format!("{}{}\n", string, str),
+                ResponseKind::Value(_) => todo!(),
+            };
+        }
+        string
+    }
+
+    pub fn to_json(&self) -> Value {
+        serde_json::from_str(
+            serde_json::to_string(
+                &self
+                    .messages
+                    .iter()
+                    .map(|a| match a {
+                        ResponseKind::Message(str) => {
+                            println!(
+                                "{:?}",
+                                str.split(" ")
+                                    .map(|a| a.to_string() + " ")
+                                    .collect::<String>()
+                            );
+                            json!({ "message": str })
+                        }
+                        ResponseKind::Value(val) => val.clone(),
+                    })
+                    .collect::<Value>(),
+            )
+            .unwrap()
+            .as_str(),
+        )
+        .unwrap()
+    }
+
+    pub fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_str())
+    }
+}
+
+impl ErrorKind {
+    pub fn message(&self) -> String {
         match self {
-            ErrorState::UnknowError(string) => write!(f, "{}: {string}", "Error".red().bold()),
-            ErrorState::CurrentDirectoryError(string) => {
-                write!(f, "{}: {string}", "Current Directory Error".red().bold(),)
+            ErrorKind::CurrentDir => "There is no current directory set.".into(),
+            ErrorKind::CreationDir => "We can't create the directory.".into(),
+            ErrorKind::HomeDir => "There is no home directory set.".into(),
+            ErrorKind::Namespace => {
+                "You need to provide at least a namespace or the name of the package".into()
             }
-
-            ErrorState::HomeDirectoryError(string) => {
-                write!(f, "{}: {string}", "Home Directory Error".red().bold(),)
+            ErrorKind::ConfigFile => {
+                "There is no typst.toml in this directory. Try to `utpm create -p` to create a package.".into()
             }
-
-            ErrorState::CreationDirectoryError(string) => {
-                write!(f, "{}: {string}", "Creation Directory Error".red().bold(),)
-            }
-
-            ErrorState::UnexpectedTokenError(string) => {
-                write!(f, "{}: {string}", "Unexpected Token Error".red().bold(),)
-            }
-
-            ErrorState::NoneTokenError(string) => {
-                write!(f, "{}: {string}", "None Token Error".red().bold(),)
-            }
-            ErrorState::UnexpectedIOError(string) => {
-                write!(f, "{}: {string}", "Unexpected IO Error".red().bold(),)
-            }
-            ErrorState::UnexpectedQuestionsError(string) => {
-                write!(f, "{}: {string}", "Unexpected Questions Error".red().bold(),)
-            }
-            ErrorState::UnexpectedGitError(string) => {
-                write!(f, "{}: {string}", "Unexpected Git Error".red().bold(),)
-            }
-            ErrorState::UnexpectedSemVerError(string) => {
-                write!(f, "{}: {string}", "Unexpected SemVer Error".red().bold(),)
-            }
+            ErrorKind::AlreadyExist(name, version, info) => format!("This package ({name}:{version}) already exist!\n{info} Put --force to force the copy or change the version in 'typst.toml'"),
+            ErrorKind::UnknowError(s) => s.into(),
+            _ => "".into(),
         }
     }
 }
 
-impl From<IError> for ErrorState {
-    fn from(err: IError) -> ErrorState {
-        ErrorState::UnexpectedIOError(err.to_string())
+impl fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
-impl From<inquire::InquireError> for ErrorState {
-    fn from(err: inquire::InquireError) -> ErrorState {
-        ErrorState::UnexpectedQuestionsError(err.to_string())
+pub struct Error {
+    kind: ErrorKind,
+    message: Option<String>,
+}
+
+pub type Result<T> = std::result::Result<T, Error>;
+
+impl Error {
+    pub fn new(kind: ErrorKind, message: String) -> Self {
+        Self {
+            kind,
+            message: Some(message),
+        }
+    }
+    pub fn empty(kind: ErrorKind) -> Self {
+        Self {
+            kind,
+            message: None,
+        }
+    }
+    pub fn json(&self) -> Value {
+        let message = self.message.clone().unwrap_or(self.kind.message());
+        json!({
+            "type": self.kind.to_string(),
+            "message": message,
+        })
+    }
+    pub fn to_str(&self) -> String {
+        let kind_message = format!("{} Error", self.kind.to_string());
+        if let Some(message) = &self.message {
+            format!("{}: {}", kind_message.bold().red(), message)
+        } else {
+            format!("{}: {}", kind_message.bold().red(), self.kind.message())
+        }
+    }
+
+    pub fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_str())
     }
 }
 
-impl From<git2::Error> for ErrorState {
-    fn from(err: git2::Error) -> ErrorState {
-        ErrorState::UnexpectedGitError(err.to_string())
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.display(f)
     }
 }
 
-impl From<semver::Error> for ErrorState {
-    fn from(err: semver::Error) -> ErrorState {
-        ErrorState::UnexpectedSemVerError(err.to_string())
+impl fmt::Display for Responses {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.display(f)
+    }
+}
+
+//TODO: impl errors.
+
+impl From<IError> for Error {
+    fn from(err: IError) -> Error {
+        Error::new(ErrorKind::IO, err.to_string())
+    }
+}
+
+impl From<inquire::InquireError> for Error {
+    fn from(err: inquire::InquireError) -> Error {
+        Error::new(ErrorKind::Questions, err.to_string())
+    }
+}
+
+impl From<git2::Error> for Error {
+    fn from(err: git2::Error) -> Error {
+        Error::new(ErrorKind::Git, err.to_string())
+    }
+}
+
+impl From<semver::Error> for Error {
+    fn from(err: semver::Error) -> Error {
+        Error::new(ErrorKind::SemVer, err.to_string())
     }
 }

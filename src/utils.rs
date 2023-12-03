@@ -66,11 +66,6 @@ impl Package {
         }
     }
 }
-#[derive(Serialize, Deserialize, Clone)]
-pub enum ProjectType {
-    Template,
-    Package,
-}
 
 /// A modify version of the `typst.toml` adding options to utpm
 #[derive(Serialize, Deserialize, Clone)]
@@ -82,9 +77,6 @@ pub struct Extra {
 
     /// List of url's for your dependencies (will be resolved with install command)
     pub dependencies: Option<Vec<String>>,
-
-    /// A quick implementation of a type system of projects
-    pub types: Option<ProjectType>,
 }
 
 impl Extra {
@@ -93,7 +85,6 @@ impl Extra {
             version: Some("2".to_string()),
             namespace: Some("local".to_string()),
             dependencies: None,
-            types: Some(ProjectType::Package),
         }
     }
 }

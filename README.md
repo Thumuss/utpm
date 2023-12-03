@@ -4,12 +4,8 @@
 
 # What is that?
 
-UTPM is a package manager for [local](https://github.com/typst/packages#local-packages) and remote (wip) packages.
+UTPM is a package manager for [local](https://github.com/typst/packages#local-packages) and remote packages.
 The goal is to manage packages to use the new feature of typst, [importing other packages from different folders](https://typst.app/docs/reference/scripting/#packages)
-
-# Why I didn't work on it for the last months
-
-I was missing a lot of times and a lot of motivation. Now I got time and motivation so you will see some updates!
 
 # How to use it?
 
@@ -19,20 +15,11 @@ You need two things, first create an `typst.toml` file by using `utpm create`:
 $ utpm create
 ```
 
-Example:
-
-https://github.com/ThumusLive/utpm/assets/42680097/473f4826-773b-4b2c-9a31-3af5756799c2
-
-Modify this file to match your project and then:
-
-And finally, you need to copy the directory to the "special" directory by using `utpm link`: 
+Modify this file to match your project and finally, you need to copy the directory to the "special" directory by using `utpm link`: 
 
 ```bash
 $ utpm link
 ```
-Example:
-
-https://github.com/ThumusLive/utpm/assets/42680097/92c06cba-928f-4ffb-b2ca-dae67ff7b32d
 
 # Install
 
@@ -41,7 +28,7 @@ You will need Cargo and Rust.
 Simpliest way :
 
 ```bash
-git clone https://github.com/ThumusLive/utpm.git &&
+git clone https://github.com/Thumuss/utpm.git &&
 cd utpm &&
 cargo install --path .
 ```

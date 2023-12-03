@@ -3,7 +3,7 @@ use std::{
     fs::{read, read_dir, symlink_metadata},
 };
 
-use super::state::{ErrorState, Result};
+use super::state::{Error, ErrorKind, Result};
 
 #[cfg(not(feature = "portable"))]
 pub fn get_data_dir() -> String {
@@ -17,16 +17,13 @@ pub fn get_data_dir() -> String {
 }
 
 pub fn get_home_dir() -> Result<String> {
+    let err_hd = Error::empty(ErrorKind::HomeDir);
     match dirs::home_dir() {
         Some(val) => match val.to_str() {
             Some(v) => Ok(String::from(v)),
-            None => Err(ErrorState::HomeDirectoryError(String::from(
-                "there is no home directory",
-            ))),
+            None => Err(err_hd),
         },
-        None => Err(ErrorState::HomeDirectoryError(String::from(
-            "there is no home directory",
-        ))),
+        None => Err(err_hd),
     }
 }
 
@@ -55,11 +52,12 @@ pub fn get_current_dir() -> Result<String> {
     match current_dir() {
         Ok(val) => match val.to_str() {
             Some(v) => Ok(String::from(v)),
-            None => Err(ErrorState::CurrentDirectoryError(String::from(
-                "there is no current directory",
-            ))),
+            None => Err(Error::new(
+                ErrorKind::CurrentDir,
+                "There is no current directory.".into(),
+            )),
         },
-        Err(val) => Err(ErrorState::CurrentDirectoryError(val.to_string())),
+        Err(val) => Err(Error::new(ErrorKind::CurrentDir, val.to_string())),
     }
 }
 
