@@ -67,7 +67,7 @@ This update will introduce documentations, a better handling error system, JSON 
 
 ## V4 (2024.03.10)
 
-As this date, a new version of typst as been release (v0.11.0-rc1 (fe94bd85)) with a new system of template.
+As this date, a new version of typst as been release (`v0.11.0-rc1 (fe94bd85)`) with a new system of template.
 For now on, this version of `utpm` will focuse on adapting the new system and be compatible with the previous system.
 
 If time isn't running out, I'll add quality of life improvement such as a `Context` system, new commands to go along with the `typst init` command and Dockerise everything (kubernetes included).
