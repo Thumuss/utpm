@@ -40,11 +40,101 @@ pub struct Package {
     pub homepage: Option<String>,
     /// A list of keywords to research your package
     pub keywords: Option<Vec<String>>,
+
+    pub categories: Option<Vec<Categorie>>,
+    pub disciplines: Option<Vec<Discipline>>,
+
     /// A minimum version of the compiler (for typst)
     pub compiler: Option<Version>,
     /// A list of excludes files
     pub exclude: Option<Vec<String>>,
 }
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub enum Discipline {
+
+}
+
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub enum Categorie {
+    Components,
+    Visualization,
+    Model,
+    Layout,
+    Text,
+    Languages,
+    Scripting,
+    Integration,
+    Utility,
+    Fun,
+
+    Book,
+    Report,
+    Paper,
+    Thesis,
+    Poster,
+    Flyer,
+    Presentation,
+    CV,
+    Office,
+}
+
+//todo: move it to a new file (and everything else)
+impl Categorie {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Self::Components => "components",
+            Self::Visualization => "visualization",
+            Self::Model => "model",
+            Self::Layout => "layout",
+            Self::Text => "text",
+            Self::Languages => "languages",
+            Self::Scripting => "scripting",
+            Self::Integration => "integration",
+            Self::Utility => "utility",
+            Self::Fun => "fun",
+
+            Self::Book => "book",
+            Self::Report => "report",
+            Self::Paper => "paper",
+            Self::Thesis => "thesis",
+            Self::Poster => "poster",
+            Self::Flyer => "flyer",
+            Self::Presentation => "presentation",
+            Self::CV => "cv",
+            Self::Office => "office",
+        }
+    }
+
+    fn from_str(string: &str) -> Result<Self, String> { //todo: Change result
+        match string {
+           "components," => Ok(Self::Components),
+           "visualization," =>  Ok(Self::Visualization),
+           "model," =>  Ok(Self::Model),
+           "layout," =>  Ok(Self::Layout),
+           "text," =>  Ok(Self::Text),
+           "languages," =>  Ok(Self::Languages),
+           "scripting," =>  Ok(Self::Scripting),
+           "integration," =>  Ok(Self::Integration),
+           "utility," =>  Ok(Self::Utility),
+           "fun," =>  Ok(Self::Fun),
+
+           "book," =>  Ok(Self::Book),
+           "report," =>  Ok(Self::Report),
+           "paper," =>  Ok(Self::Paper),
+           "thesis," =>  Ok(Self::Thesis),
+           "poster," =>  Ok(Self::Poster),
+           "flyer," =>  Ok(Self::Flyer),
+           "presentation," =>  Ok(Self::Presentation),
+           "cv," =>  Ok(Self::CV),
+           "office," =>  Ok(Self::Office),
+           _ => Err("unknown type".into()),
+        }
+    }
+}
+
+
 
 /// Default implementation of a package
 impl Package {
@@ -54,19 +144,20 @@ impl Package {
             version: Version::new(1, 0, 0),
             entrypoint: "main.typ".to_string(),
 
-            authors: None,
+            authors: Some(vec![]),
             license: None,
             description: None,
 
             repository: None,
             homepage: None,
             keywords: None,
+            categories: Some(vec![]),
+            disciplines: Some(vec![]),
             compiler: None,
             exclude: None,
         }
     }
 }
-
 /// A modify version of the `typst.toml` adding options to utpm
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Extra {
@@ -89,13 +180,37 @@ impl Extra {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Tools {
+    /// An extra for utpm (v3 only)
+    pub utpm: Option<Extra>,
+}
+
+impl Tools {
+    pub fn new(utpm: Option<Extra>) -> Self {
+        Self { utpm }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Template {
+    pub path: String,
+    pub entrypoint: String,
+    pub thumbnail: String,
+}
+
 /// The file `typst.toml` itself
 #[derive(Serialize, Deserialize)]
 pub struct TypstConfig {
     /// Base of typst package system
     pub package: Package,
-    /// An extra for utpm
+    /// An extra for utpm (v2 only)
     pub utpm: Option<Extra>,
+
+    /// Base on the new structure of typst package
+    pub tool: Option<Tools>,
+
+    pub template: Option<Template>,
 }
 
 impl TypstConfig {
@@ -116,10 +231,12 @@ impl TypstConfig {
     }
 
     /// Create a typstConfig
-    pub fn new(package: Package, extra: Extra) -> Self {
+    pub fn new(package: Package, extra: Option<Extra>, template: Option<Template>) -> Self {
         Self {
             package,
-            utpm: Some(extra),
+            utpm: None, // We allow only readable versions.
+            template,
+            tool: Some(Tools::new(extra)),
         }
     }
 }
