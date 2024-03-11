@@ -6,7 +6,7 @@ use crate::utils::{
     copy_dir_all,
     paths::{check_path_dir, d_packages, get_current_dir},
     state::{Error, ErrorKind, ResponseKind::*, Responses, Result},
-    symlink_all, Extra, TypstConfig,
+    symlink_all, specs::{Extra, TypstConfig},
 };
 
 use super::LinkArgs;
@@ -17,7 +17,7 @@ pub fn run(cmd: &LinkArgs, path: Option<String>, res: &mut Responses) -> Result<
     let config = TypstConfig::load(&(curr.clone() + "/typst.toml"));
     let namespace = config
         .utpm
-        .unwrap_or(Extra::new())
+        .unwrap_or(Extra::default())
         .namespace
         .unwrap_or("local".into());
 

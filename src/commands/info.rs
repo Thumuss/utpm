@@ -3,7 +3,7 @@ use std::{env, path::Path};
 use crate::utils::{
     paths::{check_path_file, current_package, get_ssh_dir},
     state::{Error, ErrorKind, ResponseKind, Responses, Result},
-    TypstConfig,
+    specs::TypstConfig,
 };
 use git2::{Cred, Remote, RemoteCallbacks, Repository};
 use owo_colors::OwoColorize;

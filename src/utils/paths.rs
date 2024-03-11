@@ -80,3 +80,4 @@ pub fn check_existing_symlink(path: &String) -> bool {
     };
     x.file_type().is_symlink()
 }
+
