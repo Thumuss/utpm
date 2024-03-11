@@ -17,6 +17,7 @@ spdx = { version = "0.10.2", features = ["text"] }
 clap = { version = "4.4.2", features = ["derive"] }
 git2 = "0.18.0"
 owo-colors = "3.5.0"
+strum = { version = "0.26.2", features = ["derive"] }
 
 [[bin]]
 name = "utpm"

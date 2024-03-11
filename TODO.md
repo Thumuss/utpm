@@ -67,13 +67,15 @@ This update will introduce documentations, a better handling error system, JSON 
 
 ## V4 (2024.03.10)
 
-As this date, a new version of typst as been release (`v0.11.0-rc1 (fe94bd85)`) with a new system of template.
-For now on, this version of `utpm` will focuse on adapting the new system and be compatible with the previous system.
+As of today (2024.03.10), a new version of typst has been released (`v0.11.0-rc1 (fe94bd85)`) with a new template system.
+For now on, this version of utpm will focus on both adapting the new system and being compatible with the previous system.
 
-If time isn't running out, I'll add quality of life improvement such as a `Context` system, new commands to go along with the `typst init` command and Dockerise everything (kubernetes included).
+If time isn't running out, I'll add quality of life improvements such as a `Context` system, new commands to go along with the `typst init` command and Dockerise everything (kubernetes included).
 
 The main focus will be : 
 - [ ] Add templates in `utpm`
+  - [X] Struct
+  - [ ] Implementation
 - [ ] Compatibility with older version of typst
 - [ ] Fix current bugs
 
@@ -82,5 +84,10 @@ If we got time, I'll add theses things:
 - [ ] `Context`, it will change the actual structure of handling json and errors.
 - [ ] ENV compatible.
 - [ ] get along with `typst init`
+- [ ] tree and list for `list` commands
 
-If you have any ideas to improve `utpm`, i'll take it <3
+#### Appendix
+
+- [Typst package](https://github.com/typst/packages/tree/0a5370faafd3b0662310255c4f827f9f2f1425cb)
+
+If you have any ideas to improve utpm, I will gladly accept them into account <3

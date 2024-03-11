@@ -10,7 +10,7 @@ use semver::Version;
 use crate::utils::{
     paths::{check_path_file, get_current_dir},
     state::{ResponseKind::*, Responses, Result},
-    Extra, Package, TypstConfig,
+    specs::{Extra, Package, TypstConfig},
 };
 
 use super::CreateArgs;
@@ -19,7 +19,7 @@ pub fn run(cmd: &CreateArgs, res: &mut Responses) -> Result<bool> {
     let curr = get_current_dir()?;
     let typ = curr.clone() + "/typst.toml";
 
-    let mut extra = Extra::new();
+    let mut extra = Extra::default();
     extra.namespace = cmd.namespace.to_owned();
 
     let mut pkg = Package {
