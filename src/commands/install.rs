@@ -49,7 +49,6 @@ pub async fn run(cmd: &InstallArgs) -> Result<bool> {
 
     // If a URL is provided, clone or copy the repository.
     fs::create_dir_all(&path)?;
-
     project().lock().unwrap().0 = path.clone();
 
     let url = &cmd.url;
@@ -68,12 +67,10 @@ pub async fn run(cmd: &InstallArgs) -> Result<bool> {
     }
 
     // Modify path if a subdirectory was specified so that manifest can be found.
-    // Trimming starting slash is necessary otherwise Rust treats it as absolute path
-    // but Git needs the starting slash for sparse-checkout.
-    let path = if let Some(s) = &cmd.subdir {
-        path.join(s.trim_start_matches('/'))
-    } else {
-        path
+    // Trimming starting slash is necessary otherwise Rust treats it as absolute path.
+    let path = match &cmd.subdir {
+        Some(s) => path.join(s.trim_start_matches('/')),
+        _ => path,
     };
 
     // Check for a manifest file in the source directory.
